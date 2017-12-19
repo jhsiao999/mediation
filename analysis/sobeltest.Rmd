@@ -1,0 +1,312 @@
+---
+title: "Mediation by Sobel test"
+author: "Joyce Hsiao"
+date: "2017-12-14"
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '9.'+n}
+      } 
+  }
+});
+</script>
+
+---
+
+## Introduction/Summary
+
+The motivation of the current anaysis is to estimate the contribution of DNA methylation to phenotype differences (e.g., tissue, species, etc.) in gene expression. In terms of linear models, the hypothesis is that the relationship between independent variable phenotypes and dependent variable gene expression is partially due to the mediating effect of DNA methylation. We assess the mediating effect of methylation in the association between phenotypes and expression under the following framework. Consider a hypothetical example. Say we know A causes B, and this relationship may be due to C which is highly correlated with A and and B. The hypothesis is that the relationship between A and B can be explained by the mechansim of A -> C -> B. To quantify the mediating effect of C on the relationship of A and B, we estimate the total effect of A on B and the direct effect of A on B after controlling for C. Total effect of A on B equals the direct effect of A on B after controlling for C and the indirect effect of A on B through C. When the indirect effect is large, we say that C plays a significant role in mediating the relationship between A and B. Applying to the current problem, we hypothesize that the total effect of phenotype on expression equals the direct effect of phenotype on expression after controlling for methylation and the indirect effect of phenotype on expression through methylation. 
+
+[Sobel's test](wiki) (1987) provides a method to determine whether the reduction in the independent variable is significant, after including the mediating varible in the model. We compute Sobel's test to quantify the reduction in the phenotype effect on gene expression, after including DNA methylation in the model. `ash` is applyed to the Sobel's test statistic to obtain posterior estimate of reduction in effect size which accounts for standard error of both effect sizes.
+
+[wiki]: https://en.wikipedia.org/wiki/Sobel_test
+
+---
+
+## Approach
+
+For each gene, we fit three different linear models as follows:
+
+1. $Y_g = \gamma_1 + \tau X^P + \epsilon_1 \tag{Eq. 1}$
+
+2. $X^M_g = \gamma_2 + \alpha X^P + \epsilon_2 \tag{Eq. 2}$
+
+3. $Y_g = \gamma_3 + \tau^{\prime} X^P + \beta X^M_g + \epsilon_3 \tag{Eq. 3}$
+
+$~$
+
+Notations: 
+
+$Y_g$: length-$N$ gene expression vector for gene $g$.
+
+$X^M_g$: length-$N$ vector for methylation measurements corresponding to samples at gene $g$.
+
+$X^P$: length-$N$ vector for sample phenotype labels.
+
+$\tau$: estimated total effect of phenotype $X^S$ on expression $Y_g$.
+
+$\tau^{\prime}$: estimated effect of phenotype $X^S$ on expression $Y_g$ after controlling for $X^M_g$, or the direct effect of phenotype on expression.
+
+$\alpha$: estimated effect of phenotype$X^S$ on the methylation $X^M_g$.
+
+$\beta$: estimated effect of methylation $X^M_g$ on expression $Y_g$ after controlling for phenotype differences.
+
+$\gamma_1, \gamma_2, \gamma_3$: intercepts 
+
+$\epsilon_1, \epsilon_2, \epsilon_3$: error terms in each model. Each assumed to be iid and follows normal distributions with mean 0 and variance $\sigma^2_1, \sigma^2_2, \sigma^2_3$.
+
+
+$~$
+
+Sobel's test statistic for mediating effet is
+
+$$
+t = \frac{\tau - \tau^{\prime}}{se}
+$$
+where $se = \sqrt(\alpha^2\sigma^2_{\beta} + \beta^2 \sigma^2_beta)$, and $\sigma2_{\alpha}$ and $\sigma2_{\beta}$ are standard error of $\alpha$ and $\beta$, respectively.
+
+$~$
+
+We use `ash` to estimate statistical significance of $t$ using $\tau-\tau^{\prime}$ as effect size and $se$ as standard error of the effect size.
+
+---
+
+$~$
+
+## Fitting
+
+During data preprocessing, RNA-seq data are transformed to log2 counts and methylation data to log2 percent methylated reads. For fitting $\text{Eq. 1}$ - estimating the total effect of phenotype on gene expression, I applied voom to account for variance-mean dependency in RNA-seq data, and the total effect $\tau$ and the associated $\sigma^2_1$ are estimated based on weight least square regression. For $\text{Eq. 2}$ - estimating the phenotype effect on methylation- and $\text{Eq. 3}$ - estimating the effect of phenotype on expression after controlling for methylation, ordinary least squares is used to estimate the effect sizes $\alpha$, $\beta$, $\tau^{\prime}$ and the associated residual variances $\sigma^2_2$, $\sigma^2_3$.
+
+---
+
+$~$
+
+## Sobel test + ash
+
+In this test case, we are interested in the mediating effect of methylation in the effect of tissue  difference on gene expression. The samples consist of 3 heart tissues and 4 kidney tissues. Data is consisted of `7725` genes and `7` samples. 
+
+```{r, echo = FALSE, eval=FALSE}
+df <- get(load("../data/example-kidney-v-heart-human.rda"))
+
+source("../code/sobel-test.R")
+sobel_fit <- sobel_voom_model1(df$exprs_pair, 
+      fixed_covariates=list(tissue=df$tissue), 
+      varying_covariate=df$methyl_pair)
+
+library(ashr)
+degrees <- ncol(df$exprs_pair)-2
+ash_fit <- ash(sobel_fit$d,
+               sobel_fit$se, df=degrees)
+summary(ash_fit$result$svalue)
+
+save(sobel_fit, ash_fit, file="../output/sobeltest.Rmd/results-sobel.rda")
+```
+
+```{r, echo = FALSE, eval=TRUE}
+df <- get(load("../data/example-kidney-v-heart-human.rda"))
+load(file="../output/sobeltest.Rmd/results-sobel.rda")
+```
+
+$~$
+
+**Result**: s-values < .01 for about 50% of the genes, suggesting a statistically significant reduction in the effect of phenotype on expression after controlling for methylation for the majority of the genes. In other words, for 50% genes, the effect of phenotype on expession is mediated by DNA methylation. 
+
+```{r, echo = TRUE, eval=TRUE}
+summary(ash_fit$result$svalue)
+```
+
+```{r, echo = FALSE, eval=TRUE, fig.width=7, fig.height=6}
+oldpar <- par()
+par(mfrow=c(2,2), mar=c(4,4,4,1))
+plot(x=sobel_fit$d,y=sobel_fit$se, pch=16, cex=.6,
+     xlab="Effect size", ylab="Standard error",
+     main = "Effect size vs SE",
+     col=ifelse(ash_fit$result$svalue<.01, "red", "black"))
+abline(v=0, lty=2, col="grey20")
+plot(x=sobel_fit$d, y=ash_fit$result$PosteriorMean, pch=16, cex=.6,
+     xlab="Effect size", ylab="Posterior mean",
+     main = "Effect size vs Posterior Mean",
+     col=ifelse(ash_fit$result$svalue<.01, "red", "black"))
+plot(x=sobel_fit$se, y=ash_fit$result$PosteriorSD, pch=16, cex=.6,
+     xlab="Standard error", ylab="Posterior standard deviation",
+     main = "SE vs Posterior SD",
+     col=ifelse(ash_fit$result$svalue<.01, "red", "black"))
+plot(x=sobel_fit$d, y=-log10(ash_fit$result$svalue), pch=16, cex=.6,
+     xlab="Effect size", ylab="-log10(s-value)",
+     main = "Effect size vs -log10(s-value)",
+     col=ifelse(ash_fit$result$svalue<.01, "red", "black"))
+```
+
+$~$
+
+---
+
+## Regressing out + ash
+
+Previously, we computed the reduction in effect size after regressing out the effect of methylation. Three linear models are fitted for each gene $g$:
+
+1. $Y_g = \gamma_1 + \tau X^P + \epsilon_1 \tag{Eq. 1}$
+
+2. $Y_g = \gamma_4 + \kappa X^M_g  + \epsilon_4 \tag{Eq. 4}$
+
+2. $Y_g - (\hat{\gamma}_4 + \hat{\kappa} X^M_g) = \gamma_5 + \tau^{\prime} X^P + \epsilon_5 \tag{Eq. 5}$
+
+where $\hat{\gamma}_4$ and $\hat{\kappa}$ are ordinary least square estimates. The difference between this approach and the Sobel's test lie in the estimation of the direct effect of phenotype on expression. In this approach, we first estimate and remove the effect of methylation on expression. While, in Sobel's test, we estimate direct effect of phentype on expression while controlling for methylation (i.e., keep methylation levels constant).
+
+
+```{r, echo = FALSE, eval=TRUE}
+load(file="../output/sobeltest.Rmd/results-reg.rda")
+```
+
+```{r, echo = TRUE, eval=TRUE}
+summary(ash_reg$result$svalue)
+```
+
+```{r, echo = FALSE, eval=TRUE, fig.width=7, fig.height=6}
+oldpar <- par()
+par(mfrow=c(2,2), mar=c(4,4,4,1))
+plot(x=df_reg$beta_diff,y=df_reg$cov_diff_sqrt, pch=16, cex=.6,
+     xlab="Effect size", ylab="Standard error",
+     main = "Effect size vs SE",
+     col=ifelse(ash_fit$result$svalue<.01, "red", "black"))
+abline(v=0, lty=2, col="grey20")
+plot(x=df_reg$beta_diff, y=ash_reg$result$PosteriorMean, pch=16, cex=.6,
+     xlab="Effect size", ylab="Posterior mean",
+     main = "Effect size vs Posterior Mean",
+     col=ifelse(ash_fit$result$svalue<.01, "red", "black"))
+plot(x=df_reg$cov_diff_sqrt, y=ash_reg$result$PosteriorSD, pch=16, cex=.6,
+     xlab="Standard error", ylab="Posterior standard deviation",
+     main = "SE vs Posterior SD",
+     col=ifelse(ash_fit$result$svalue<.01, "red", "black"))
+plot(x=df_reg$beta_diff, y=-log10(ash_reg$result$svalue), pch=16, cex=.6,
+     xlab="Effect size", ylab="-log10(s-value)",
+     main = "Effect size vs -log10(s-value)",
+     col=ifelse(ash_fit$result$svalue<.01, "red", "black"))
+```
+
+
+$~$
+
+---
+
+## Comparisons
+
+**S-value**: 
+
+1. High correlation between the ranks of the s-values of the two approaches (Spearman's correlation = `r cor(ash_reg$result$svalue,ash_fit$result$sebetahat, method="spearman")`). 
+
+2. And, considering the lists of top 2,000 genes in the two different approaches, only about `r length(intersect(which(order(ash_reg$result$svalue) < 2001), which(order(ash_fit$result$svalue) < 2001)))` genes apear in both lists - i.e., agree between the two approaches. 
+
+$~$
+
+```{r, echo = FALSE, fig.width=8, fig.height=5}
+par(mfrow=c(1,2))
+plot(x=ash_reg$result$svalue, 
+     y=ash_fit$result$svalue, pch=16, cex=.6,
+     xlab="Regressing out approach", ylab="Sobel's test",
+     main = "Compare s-value")
+abline(a=0, b=1, lty=1, col="red")
+
+plot(x=rank(ash_reg$result$svalue), 
+     y=rank(ash_fit$result$svalue), pch=16, cex=.6,
+     xlab="Regressing out approach", ylab="Sobel's test",
+     main = "Compare ranks of s-value")
+abline(a=0, b=1, lty=1, col="red")
+
+```
+
+$~$
+
+**Standard error**
+
+1. High correlation between the standard errors of the two approaches (Spearman's rank correlation `r cor(df_reg$cov_diff_sqrt,sobel_fit$se, method = "spearman")`). 
+
+2. Standard errors in the regressing out aprpach are larger than in the Sobel's test. Comparing ranks of the standard error, `r sum(rank(df_reg$cov_diff_sqrt) > rank(sobel_fit$se))` genes (60%).
+
+$~$
+
+```{r, echo = FALSE, fig.width=8, fig.height=5}
+par(mfrow=c(1,2))
+plot(x=df_reg$cov_diff_sqrt,y=sobel_fit$se, pch=16, cex=.6,
+     xlab="Regressing out approach", ylab="Sobel's test",
+     main = "Compare standard errors")
+abline(a=0, b=1, lty=2, col="red")
+plot(x=rank(df_reg$cov_diff_sqrt),y=rank(sobel_fit$se), pch=16, cex=.6,
+     xlab="Regressing out approach", ylab="Sobel's test",
+     main = "Compare ranks of standard errors")
+abline(a=0, b=1, lty=2, col="red")
+```
+
+$~$
+
+**Effect sizes**
+
+1. About 50% of the effect sizes in Sobel test approach are larger than in the Regressing out approach, and vice versa.
+
+2. Moderate correlation between the effect sizes of the two approaches (Spearman's correlation `r cor(as.vector(df_reg$beta_diff),sobel_fit$d, method = "spearman")`). 
+
+$~$
+
+```{r, echo = FALSE, fig.width=8, fig.height=5}
+par(mfrow=c(1,2))
+plot(x=df_reg$beta_diff,y=sobel_fit$d, pch=16, cex=.6,
+     xlab="Regressing out approach", ylab="Sobel's test",
+     main = "Compare effect sizes",
+     col=ifelse(as.vector(df_reg$beta_diff)*sobel_fit$d<0, "red", "black"))
+abline(v=0, h=0, lty=2, col="grey20")
+plot(x=rank(df_reg$beta_diff),y=rank(sobel_fit$d), pch=16, cex=.6,
+     xlab="Regressing out approach", ylab="Sobel's test",
+     main = "Compare ranks of effect sizes",
+     col=ifelse(as.vector(df_reg$beta_diff)*sobel_fit$d<0, "red", "black"))
+abline(v=0, h=0, lty=2, col="grey20")
+```
+
+**Signs of effect sizes**
+
+1. For the signs of effect sizes (reduction in the effect of phenotype on expression after controlling for methylation): the signs are the same for `r sum(as.vector(df_reg$beta_diff)*sobel_fit$d>0)` genes (92%), and different for `r sum(as.vector(df_reg$beta_diff)*sobel_fit$d <0)` genes (8%). 
+
+2. I then look at the subset of genes at which the two approaches disagree on the signs of the effect size. Perhaps this can give some hints on potential biases introduced by the two approaches. Of the top 2,000 genes in the Sobel's test, the signs of 187 genes disagree with the Regressing out approach. Of the top 2,000 genes in the Regressing out approach, the signs of 154 genes disagree with the Sobel's test. Finally, for 40 genes in both lists, we found signs disagree between the two appraoches. 
+
+
+```{r, echo = FALSE, eval = FALSE}
+ii_top_sobel <- length(
+  which(order(ash_fit$result$svalue) < 2001 & (as.vector(df_reg$beta_diff)*sobel_fit$d < 0)))
+ii_top_reg <- length(
+  which(order(ash_reg$result$svalue) < 2001 & (as.vector(df_reg$beta_diff)*sobel_fit$d < 0)))
+ii_top <- length(
+  which(order(ash_reg$result$svalue) < 2001 & order(ash_fit$result$svalue) < 2001 & (as.vector(df_reg$beta_diff)*sobel_fit$d < 0)))
+```
+
+
+---
+
+## Session information
+
+```{r}
+sessionInfo()
+```
+
