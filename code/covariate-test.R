@@ -10,16 +10,21 @@
 df <- get(load(file="data/example-kidney-v-heart-human.rda"))
 
 # Extract parameters
-N <- ncol(df$exprs_pair)
-ngenes <- nrow(df$methyl_pair)
+exprs_pair <- df$exprs_pair
+methyl_pair <- df$methyl_pair
 tissue <- df$tissue
+N <- ncol(exprs_pair)
+ngenes <- nrow(exprs_pair)
 
 # <---- Model 1: exprs ~ tissue
 # specify tissue coding
 design_1 <- model.matrix(~tissue)
-design_1[design_1[,2]==0,2] <- -1
 
-model_1 <- lmFit(exprs_pair, design_1)
+exprs_counts <- 2^exprs_pair
+exprs_voom <- voom(exprs_counts, design=design_1, normalize.method = "none")
+
+model_1 <- lmFit(exprs_voom, design_1)
+model_1 <- eBayes(model_1)
 
 # <---- Model 3: exprs corrected for methylation ~ tissue
 # specify design matrix
@@ -81,6 +86,16 @@ for (g in 1:length(cov_beta13)) {
 cov_diff_sqrt <- sqrt(se_beta1^2 + se_beta3^2 - 2*cov_beta13)
 beta_diff <- beta1-beta3
 
+#out <- list(beta_diff=beta_diff, cov_diff_sqrt=cov_diff_sqrt)
+
+df_reg <- list(beta_diff=beta_diff, cov_diff_sqrt=cov_diff_sqrt)
+ash_reg <- ash(as.vector(beta_diff), cov_diff_sqrt, df=5)
+reg3 <- coef(model_3)[,2]
+reg1 <- coef(model_1)[,2]
+
+save(df_reg, ash_reg,
+     reg3, reg1,
+     file="output/sobeltest.Rmd/results-reg.rda")
 
 
 
