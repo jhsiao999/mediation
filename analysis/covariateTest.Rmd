@@ -1,0 +1,148 @@
+---
+title: "Mediation test"
+date: 2017-11-29
+author: Joyce Hsiao
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '9.'+n}
+      } 
+  }
+});
+</script>
+
+
+## Scientific background
+
+The goal of the current anaysis is to estimate the contribution of DNA methylation to phenotype differences (e.g., tissue, species, etc.) in gene expression. The general idea is that methylation is highly correlated with gene expression and is likely a mediating factor for phenotype difference in gene expression. In other words, the total effect of phenotype on expression is consisted of direct effect not due to methylation and indirect effect due to methylation. Consider a hypothetical example. Say we know A causes B, and this relationship is likely due to C which causes B and is caused by A (A -> C -> B). The effect size estimating A-> B is the total effect. Now, say we control for the effect of C on B, the we can estimate the direct effect of A on B (A|C -> B). Total effect equals the sum of direct and indirect effect. Hence, we can estimate indirect effect by taking the difference between the total and the direct effect. The magnitude of the indirect effect provides an estimate for the mediating effect of C on the relationship between A and B. For example, in a completely mediation case, indirect effects are signficantly small, possibly close to zero. And in a partial mediation case, indirect effects are significantly small and can even be at the same magnitude as the direct effects. We use `ash` to compare direct versus indirect effects and to obtain a robust estimate of effect size differences, by accounting for standard error of both effect sizes.
+
+We use `ash` to compare direct versus indirect effects and to obtain a robust estimate of effect size differences, by accounting for standard error of both effect sizes.
+
+In this document, we assume the phenotype is species, although one can readily substitute other phenotypes for species (so long as it's two-group comparison).
+
+
+## Approach
+
+We use linear models to perform the following analysis:
+
+Step 1. Estimate the effect of species on gene expession levels  
+Step 2. Regression methylation levels out from expression levels.
+Step 3. Estimate the effect of species on gene expession levels after controlling for methylation levels  
+Step 4. Compute the covariance of the differences of the effect sizes in Step 1 versus Step 2  
+Step 5. Use `ash` to estimate false discovery rate
+
+
+## Data
+
+Gene expression levels and methylation levels have been preprocessed and transformed to logarithm scale. For gene $g$, we observe gene expression level $Y_g$ and DNA methylation level $M_g$ for species $s$ in sample $i$. We assume that 
+
+1. DNA methylation level $M_g$ is fixed, i.e., not a random variable.
+
+2. $E(Y_g) = \mu_{g}$ and $Var(Y_g) = \sigma^2_{g} \mathbf{I}_{N}$, where $Y^g \sim N(\mu_{g}, \sigma^2_{g} \mathbf{I}_N)$. In other words, sample gene expression levels are independent both within and between species. 
+
+
+## Methods
+
+### Notations
+
+$s=1,2$: two species, human and chimpanzee
+
+$N=n_1+n_2$: Total sample size $N$ equals $n_1$ human samples plus $n_2$ chimp samples.  
+
+$R = (R_{H},R_{C})^{\prime}$: length-$N$ RIN scores.
+
+$Y_g = (Y_{gH},Y_{gC})^{\prime}$: length-$N$ transcriptional expression vector for gene $g$.
+
+$M_g =(M_{gH},M_{gC})^{\prime}$: length-$N$ methylation level vector for gene $g$.
+
+
+### Estimate the unconditional effet of species on expression
+
+We fitting a linear model including species and RIN score as covariates
+
+$$
+E(Y_g) = X_1 \beta_{g1} 
+$$
+where $\beta_{g1} = (\beta^I_{g1},\beta^S_{g1}, \beta^R_{g1})^{\prime}$ denote intercept, species and RIN socre effect, respectively. $X_1$ is the $N \times 3$ design matrix
+
+$$
+X_1 = \begin{bmatrix}
+\mathbf{1}_n & \mathbf{1}_n & R_H\\
+\mathbf{1}_n & -\mathbf{1}_n & R_C\\
+\end{bmatrix}.
+$$
+It follows that the least-square estimator $\hat{\beta}_{g1} = (X^{\prime}X)^{-1}X^{\prime}Y_g$, and 
+$$Var(\hat{\beta}_{g1}) = \sigma_g^2 (X_{1}^{\prime} X_{1})^{-1} .$$
+
+$~$
+
+### Estimate the conditional effect of species on expression
+
+We estimate the conditional effect of species on expression after controlling for methylation levels in two steps. First, we fit an analysis of covariance model with methylation levels as the covariate.
+
+$$
+E(Y_g) = X_{2g} \beta_{g2} = (1_N, M_g) \beta_{g2} \tag{Eq. 2}
+$$
+where $\beta_{g2} = (\beta^I_{g2}, \beta^M_{g2})^{\prime}$ correspond to intercept, species, RIN score effect, and methylation effect, respectively. The least-square solution $\hat{\beta}_{g2} = (X_{2g}^{\prime}X_{2g})^{-1}X_{2g}^{\prime}Y_g$, and 
+$$Var(\hat{\beta}_{g2}) = \sigma_g^2 (X_{2g}^{\prime}X_{2g})^{-1}.$$
+
+The estimated methylation effect $\hat{\beta}_{g2}=C^{\prime}\beta_{g2}$ where $C^{\prime}=(0,1)$. And 
+$$Var(\hat{\beta}_{g2}^M) = Var(C^{\prime}\hat{\beta}_{g2}) = \sigma_g^2 C^{\prime} (X_{2g}^{\prime}X_{2g})^{-1}C.$$
+
+$~$
+
+The second step estimates the species effect on expression after accounting for the effect of methylation levels on expression. We fit a linear model  
+
+$$
+E(Y_g - M_g C^{\prime}\hat{\beta}_{g2}) = X \beta_{g3} 
+$$
+where $\beta_{g3} = (\beta^I_{g3}, \beta^S_{g3}, \beta^R_{g3})^{\prime}$ corresponds to intercept, species effect, and RIN score effect on gene expression after controlling for methylation levels. The least-square solution $\hat{\beta}_{g3}$ is $(X_1^{\prime} X_1)^{-1}X_1^{\prime} (Y_g-M_g C^{\prime}\hat{\beta}_{g2})$. Subsitute $\hat{\beta}^M_{g2}$ and denote $A_1=(X_1^{\prime} X_1)^{-1}X_1^{\prime}$, $A_{2g}=(X_{2g}^{\prime} X_{2g})^{-1}X_{2g}^{\prime}$, then
+
+$$
+\begin{aligned}
+\hat{\beta}_{g3} 
+&= (X_1^{\prime} X_1)^{-1}X_1^{\prime} (Y_g - M_{g}C^{\prime}\hat{\beta}_{g2}) \\
+&= \hat{\beta}_{g1} - A_1M_{g}C^{\prime}\hat{\beta}_{g2},
+\end{aligned}
+$$
+and 
+$$
+\begin{aligned}
+Var(\hat{\beta}_{g3}) 
+&= Var(\hat{\beta}_{g1}) + A_1 M_g C^{\prime}Var(\hat{\beta}_{g2} ) CM^{\prime}_g A_1^{\prime} - 2Cov(\hat{\beta}_{g1},A_1M_{g}C^{\prime}\hat{\beta}_{g2})\\
+&= Var(\hat{\beta}_{g1}) +A_1M_gC^{\prime} Var(\hat{\beta}_{g2} ) CM^{\prime}_g A_1^{\prime} - 2\sigma^2_g A_1 A_{2g}^{\prime} CM_g^{\prime}A_1^{\prime}
+\end{aligned}
+$$
+
+$~$
+
+### Covariance of the difference between direct and indirect species effects
+
+First, we compute the covariance between $\hat{\beta}^S_{g1}$ and $\hat{\beta}^S_{g3}$,
+
+$$
+\begin{aligned}
+Cov(\hat{\beta}_{g1}, \hat{\beta}_{g3}) 
+&=Cov(\hat{\beta}_{g1},\hat{\beta}_{g1} - A_1M_{g}C^{\prime}\hat{\beta}_{g2})\\
+&=Var(\hat{\beta}_{g1}) - Cov(A_1Y_g, A_1M_g C^{\prime} A_2Y_g) \\
+&=Var(\hat{\beta}_{g1}) - \sigma^2_g A_1 A_2^{\prime}CM_g^{\prime}A_1^{\prime}
+\end{aligned}
+$$
+
+Putting the above results together, we can compute the standard error for the difference of effect size
+
+$$
+Cov(\hat{\beta}^S_{g1} - \hat{\beta}^S_{g3})
+= Var(\hat{\beta}^S_{g1}) + Var(\hat{\beta}^S_{g3}) -2 Cov(\hat{\beta}^S_{g1},\, \hat{\beta}^S_{g3}).
+$$
+
+
