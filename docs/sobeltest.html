@@ -326,7 +326,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-12-19</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 25256f0</p>
+<p><strong>Code version:</strong> a6bc68c</p>
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   TeX: { 
@@ -357,9 +357,9 @@ MathJax.Hub.Config({
 <p><span class="math inline">\(Y_g\)</span>: length-<span class="math inline">\(N\)</span> gene expression vector for gene <span class="math inline">\(g\)</span>.</p>
 <p><span class="math inline">\(X^M_g\)</span>: length-<span class="math inline">\(N\)</span> vector for methylation measurements corresponding to samples at gene <span class="math inline">\(g\)</span>.</p>
 <p><span class="math inline">\(X^P\)</span>: length-<span class="math inline">\(N\)</span> vector for sample phenotype labels.</p>
-<p><span class="math inline">\(\tau\)</span>: estimated total effect of phenotype <span class="math inline">\(X^S\)</span> on expression <span class="math inline">\(Y_g\)</span>.</p>
-<p><span class="math inline">\(\tau^{\prime}\)</span>: estimated effect of phenotype <span class="math inline">\(X^S\)</span> on expression <span class="math inline">\(Y_g\)</span> after controlling for <span class="math inline">\(X^M_g\)</span>, or the direct effect of phenotype on expression.</p>
-<p><span class="math inline">\(\alpha\)</span>: estimated effect of phenotype<span class="math inline">\(X^S\)</span> on the methylation <span class="math inline">\(X^M_g\)</span>.</p>
+<p><span class="math inline">\(\tau\)</span>: estimated total effect of phenotype <span class="math inline">\(X^P\)</span> on expression <span class="math inline">\(Y_g\)</span>.</p>
+<p><span class="math inline">\(\tau^{\prime}\)</span>: estimated effect of phenotype <span class="math inline">\(X^P\)</span> on expression <span class="math inline">\(Y_g\)</span> after controlling for <span class="math inline">\(X^M_g\)</span>, or the direct effect of phenotype on expression.</p>
+<p><span class="math inline">\(\alpha\)</span>: estimated effect of phenotype<span class="math inline">\(X^P\)</span> on the methylation <span class="math inline">\(X^M_g\)</span>.</p>
 <p><span class="math inline">\(\beta\)</span>: estimated effect of methylation <span class="math inline">\(X^M_g\)</span> on expression <span class="math inline">\(Y_g\)</span> after controlling for phenotype differences.</p>
 <p><span class="math inline">\(\gamma_1, \gamma_2, \gamma_3\)</span>: intercepts</p>
 <p><span class="math inline">\(\epsilon_1, \epsilon_2, \epsilon_3\)</span>: error terms in each model. Each assumed to be iid and follows normal distributions with mean 0 and variance <span class="math inline">\(\sigma^2_1, \sigma^2_2, \sigma^2_3\)</span>.</p>
@@ -367,7 +367,7 @@ MathJax.Hub.Config({
 <p>Sobel’s test statistic for mediating effet is</p>
 <p><span class="math display">\[
 t = \frac{\tau - \tau^{\prime}}{se}
-\]</span> where <span class="math inline">\(se = \sqrt(\alpha^2\sigma^2_{\beta} + \beta^2 \sigma^2_beta)\)</span>, and <span class="math inline">\(\sigma2_{\alpha}\)</span> and <span class="math inline">\(\sigma2_{\beta}\)</span> are standard error of <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span>, respectively.</p>
+\]</span> where <span class="math inline">\(se = \sqrt(\alpha^2\sigma^2_{\beta} + \beta^2 \sigma^2_{\beta})\)</span>, and <span class="math inline">\(\sigma2_{\alpha}\)</span> and <span class="math inline">\(\sigma2_{\beta}\)</span> are standard error of <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span>, respectively.</p>
 <p><span class="math inline">\(~\)</span></p>
 <p>We use <code>ash</code> to estimate statistical significance of <span class="math inline">\(t\)</span> using <span class="math inline">\(\tau-\tau^{\prime}\)</span> as effect size and <span class="math inline">\(se\)</span> as standard error of the effect size.</p>
 <hr />
