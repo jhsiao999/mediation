@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Joyce Hsiao" />
+
+<meta name="date" content="2017-12-14" />
+
+<title>Mediation by Sobel test</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">mediation</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jdblischak/workflowr">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Mediation by Sobel test</h1>
+<h4 class="author"><em>Joyce Hsiao</em></h4>
+<h4 class="date"><em>2017-12-14</em></h4>
+
+</div>
+
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<pre><code>Warning in as.POSIXlt.POSIXct(Sys.time()): unknown timezone &#39;zone/tz/2017c.
+1.0/zoneinfo/America/Chicago&#39;</code></pre>
+<p><strong>Last updated:</strong> 2017-12-19</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> 25256f0</p>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '9.'+n}
+      } 
+  }
+});
+</script>
+<hr />
+<div id="introductionsummary" class="section level2">
+<h2>Introduction/Summary</h2>
+<p>The motivation of the current anaysis is to estimate the contribution of DNA methylation to phenotype differences (e.g., tissue, species, etc.) in gene expression. In terms of linear models, the hypothesis is that the relationship between independent variable phenotypes and dependent variable gene expression is partially due to the mediating effect of DNA methylation. We assess the mediating effect of methylation in the association between phenotypes and expression under the following framework. Consider a hypothetical example. Say we know A causes B, and this relationship may be due to C which is highly correlated with A and and B. The hypothesis is that the relationship between A and B can be explained by the mechansim of A -&gt; C -&gt; B. To quantify the mediating effect of C on the relationship of A and B, we estimate the total effect of A on B and the direct effect of A on B after controlling for C. Total effect of A on B equals the direct effect of A on B after controlling for C and the indirect effect of A on B through C. When the indirect effect is large, we say that C plays a significant role in mediating the relationship between A and B. Applying to the current problem, we hypothesize that the total effect of phenotype on expression equals the direct effect of phenotype on expression after controlling for methylation and the indirect effect of phenotype on expression through methylation.</p>
+<p><a href="wiki">Sobel’s test</a> (1987) provides a method to determine whether the reduction in the independent variable is significant, after including the mediating varible in the model. We compute Sobel’s test to quantify the reduction in the phenotype effect on gene expression, after including DNA methylation in the model. <code>ash</code> is applyed to the Sobel’s test statistic to obtain posterior estimate of reduction in effect size which accounts for standard error of both effect sizes.</p>
+<hr />
+</div>
+<div id="approach" class="section level2">
+<h2>Approach</h2>
+<p>For each gene, we fit three different linear models as follows:</p>
+<ol style="list-style-type: decimal">
+<li><p><span class="math inline">\(Y_g = \gamma_1 + \tau X^P + \epsilon_1 \tag{Eq. 1}\)</span></p></li>
+<li><p><span class="math inline">\(X^M_g = \gamma_2 + \alpha X^P + \epsilon_2 \tag{Eq. 2}\)</span></p></li>
+<li><p><span class="math inline">\(Y_g = \gamma_3 + \tau^{\prime} X^P + \beta X^M_g + \epsilon_3 \tag{Eq. 3}\)</span></p></li>
+</ol>
+<p><span class="math inline">\(~\)</span></p>
+<p>Notations:</p>
+<p><span class="math inline">\(Y_g\)</span>: length-<span class="math inline">\(N\)</span> gene expression vector for gene <span class="math inline">\(g\)</span>.</p>
+<p><span class="math inline">\(X^M_g\)</span>: length-<span class="math inline">\(N\)</span> vector for methylation measurements corresponding to samples at gene <span class="math inline">\(g\)</span>.</p>
+<p><span class="math inline">\(X^P\)</span>: length-<span class="math inline">\(N\)</span> vector for sample phenotype labels.</p>
+<p><span class="math inline">\(\tau\)</span>: estimated total effect of phenotype <span class="math inline">\(X^S\)</span> on expression <span class="math inline">\(Y_g\)</span>.</p>
+<p><span class="math inline">\(\tau^{\prime}\)</span>: estimated effect of phenotype <span class="math inline">\(X^S\)</span> on expression <span class="math inline">\(Y_g\)</span> after controlling for <span class="math inline">\(X^M_g\)</span>, or the direct effect of phenotype on expression.</p>
+<p><span class="math inline">\(\alpha\)</span>: estimated effect of phenotype<span class="math inline">\(X^S\)</span> on the methylation <span class="math inline">\(X^M_g\)</span>.</p>
+<p><span class="math inline">\(\beta\)</span>: estimated effect of methylation <span class="math inline">\(X^M_g\)</span> on expression <span class="math inline">\(Y_g\)</span> after controlling for phenotype differences.</p>
+<p><span class="math inline">\(\gamma_1, \gamma_2, \gamma_3\)</span>: intercepts</p>
+<p><span class="math inline">\(\epsilon_1, \epsilon_2, \epsilon_3\)</span>: error terms in each model. Each assumed to be iid and follows normal distributions with mean 0 and variance <span class="math inline">\(\sigma^2_1, \sigma^2_2, \sigma^2_3\)</span>.</p>
+<p><span class="math inline">\(~\)</span></p>
+<p>Sobel’s test statistic for mediating effet is</p>
+<p><span class="math display">\[
+t = \frac{\tau - \tau^{\prime}}{se}
+\]</span> where <span class="math inline">\(se = \sqrt(\alpha^2\sigma^2_{\beta} + \beta^2 \sigma^2_beta)\)</span>, and <span class="math inline">\(\sigma2_{\alpha}\)</span> and <span class="math inline">\(\sigma2_{\beta}\)</span> are standard error of <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span>, respectively.</p>
+<p><span class="math inline">\(~\)</span></p>
+<p>We use <code>ash</code> to estimate statistical significance of <span class="math inline">\(t\)</span> using <span class="math inline">\(\tau-\tau^{\prime}\)</span> as effect size and <span class="math inline">\(se\)</span> as standard error of the effect size.</p>
+<hr />
+<p><span class="math inline">\(~\)</span></p>
+</div>
+<div id="fitting" class="section level2">
+<h2>Fitting</h2>
+<p>During data preprocessing, RNA-seq data are transformed to log2 counts and methylation data to log2 percent methylated reads. For fitting <span class="math inline">\(\text{Eq. 1}\)</span> - estimating the total effect of phenotype on gene expression, I applied voom to account for variance-mean dependency in RNA-seq data, and the total effect <span class="math inline">\(\tau\)</span> and the associated <span class="math inline">\(\sigma^2_1\)</span> are estimated based on weight least square regression. For <span class="math inline">\(\text{Eq. 2}\)</span> - estimating the phenotype effect on methylation- and <span class="math inline">\(\text{Eq. 3}\)</span> - estimating the effect of phenotype on expression after controlling for methylation, ordinary least squares is used to estimate the effect sizes <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\beta\)</span>, <span class="math inline">\(\tau^{\prime}\)</span> and the associated residual variances <span class="math inline">\(\sigma^2_2\)</span>, <span class="math inline">\(\sigma^2_3\)</span>.</p>
+<hr />
+<p><span class="math inline">\(~\)</span></p>
+</div>
+<div id="sobel-test-ash" class="section level2">
+<h2>Sobel test + ash</h2>
+<p>In this test case, we are interested in the mediating effect of methylation in the effect of tissue difference on gene expression. The samples consist of 3 heart tissues and 4 kidney tissues. Data is consisted of <code>7725</code> genes and <code>7</code> samples.</p>
+<p><span class="math inline">\(~\)</span></p>
+<p><strong>Result</strong>: s-values &lt; .01 for about 50% of the genes, suggesting a statistically significant reduction in the effect of phenotype on expression after controlling for methylation for the majority of the genes. In other words, for 50% genes, the effect of phenotype on expession is mediated by DNA methylation.</p>
+<pre class="r"><code>summary(ash_fit$result$svalue)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+0.000000 0.001408 0.010052 0.024831 0.038803 0.114629 </code></pre>
+<p><img src="figure/sobeltest.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><span class="math inline">\(~\)</span></p>
+<hr />
+</div>
+<div id="regressing-out-ash" class="section level2">
+<h2>Regressing out + ash</h2>
+<p>Previously, we computed the reduction in effect size after regressing out the effect of methylation. Three linear models are fitted for each gene <span class="math inline">\(g\)</span>:</p>
+<ol style="list-style-type: decimal">
+<li><p><span class="math inline">\(Y_g = \gamma_1 + \tau X^P + \epsilon_1 \tag{Eq. 1}\)</span></p></li>
+<li><p><span class="math inline">\(Y_g = \gamma_4 + \kappa X^M_g + \epsilon_4 \tag{Eq. 4}\)</span></p></li>
+<li><p><span class="math inline">\(Y_g - (\hat{\gamma}_4 + \hat{\kappa} X^M_g) = \gamma_5 + \tau^{\prime} X^P + \epsilon_5 \tag{Eq. 5}\)</span></p></li>
+</ol>
+<p>where <span class="math inline">\(\hat{\gamma}_4\)</span> and <span class="math inline">\(\hat{\kappa}\)</span> are ordinary least square estimates. The difference between this approach and the Sobel’s test lie in the estimation of the direct effect of phenotype on expression. In this approach, we first estimate and remove the effect of methylation on expression. While, in Sobel’s test, we estimate direct effect of phentype on expression while controlling for methylation (i.e., keep methylation levels constant).</p>
+<pre class="r"><code>summary(ash_reg$result$svalue)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.00000 0.01852 0.09687 0.10346 0.17915 0.24915 </code></pre>
+<p><img src="figure/sobeltest.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><span class="math inline">\(~\)</span></p>
+<hr />
+</div>
+<div id="comparisons" class="section level2">
+<h2>Comparisons</h2>
+<p><strong>S-value</strong>:</p>
+<ol style="list-style-type: decimal">
+<li><p>High correlation between the ranks of the s-values of the two approaches (Spearman’s correlation = 0.7668004).</p></li>
+<li><p>And, considering the lists of top 2,000 genes in the two different approaches, only about 497 genes apear in both lists - i.e., agree between the two approaches.</p></li>
+</ol>
+<p><span class="math inline">\(~\)</span></p>
+<p><img src="figure/sobeltest.Rmd/unnamed-chunk-8-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><span class="math inline">\(~\)</span></p>
+<p><strong>Standard error</strong></p>
+<ol style="list-style-type: decimal">
+<li><p>High correlation between the standard errors of the two approaches (Spearman’s rank correlation 0.8129075).</p></li>
+<li><p>Standard errors in the regressing out aprpach are larger than in the Sobel’s test. Comparing ranks of the standard error, 4677 genes (60%).</p></li>
+</ol>
+<p><span class="math inline">\(~\)</span></p>
+<p><img src="figure/sobeltest.Rmd/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><span class="math inline">\(~\)</span></p>
+<p><strong>Effect sizes</strong></p>
+<ol style="list-style-type: decimal">
+<li><p>About 50% of the effect sizes in Sobel test approach are larger than in the Regressing out approach, and vice versa.</p></li>
+<li><p>Moderate correlation between the effect sizes of the two approaches (Spearman’s correlation 0.4520101).</p></li>
+</ol>
+<p><span class="math inline">\(~\)</span></p>
+<p><img src="figure/sobeltest.Rmd/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><strong>Signs of effect sizes</strong></p>
+<ol style="list-style-type: decimal">
+<li><p>For the signs of effect sizes (reduction in the effect of phenotype on expression after controlling for methylation): the signs are the same for 7058 genes (92%), and different for 667 genes (8%).</p></li>
+<li><p>I then look at the subset of genes at which the two approaches disagree on the signs of the effect size. Perhaps this can give some hints on potential biases introduced by the two approaches. Of the top 2,000 genes in the Sobel’s test, the signs of 187 genes disagree with the Regressing out approach. Of the top 2,000 genes in the Regressing out approach, the signs of 154 genes disagree with the Sobel’s test. Finally, for 40 genes in both lists, we found signs disagree between the two appraoches.</p></li>
+</ol>
+<hr />
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.4.1 (2017-06-30)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS High Sierra 10.13
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.14      knitr_1.17        magrittr_1.5     
+ [4] MASS_7.3-47       doParallel_1.0.11 pscl_1.5.2       
+ [7] SQUAREM_2017.10-1 lattice_0.20-35   foreach_1.4.3    
+[10] ashr_2.1-27       stringr_1.2.0     tools_3.4.1      
+[13] parallel_3.4.1    grid_3.4.1        git2r_0.19.0     
+[16] htmltools_0.3.6   iterators_1.0.8   yaml_2.1.15      
+[19] rprojroot_1.2     digest_0.6.12     Matrix_1.2-12    
+[22] codetools_0.2-15  evaluate_0.10.1   rmarkdown_1.8    
+[25] stringi_1.1.6     compiler_3.4.1    backports_1.1.1  
+[28] truncnorm_1.0-7  </code></pre>
+</div>
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
