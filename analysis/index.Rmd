@@ -12,7 +12,7 @@ Share results of applying `ash` to test mediation effect in the analysis of RNA-
 * [Sobel's test for mediation](sobeltest.html)
 
 * Regressing out methylation levels
-    * [Derivations](covariateTest.pdf)
+    * [Derivations](docs/covariateTest.pdf)
     
 
 
