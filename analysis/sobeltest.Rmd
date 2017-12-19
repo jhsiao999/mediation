@@ -67,11 +67,11 @@ $X^M_g$: length-$N$ vector for methylation measurements corresponding to samples
 
 $X^P$: length-$N$ vector for sample phenotype labels.
 
-$\tau$: estimated total effect of phenotype $X^S$ on expression $Y_g$.
+$\tau$: estimated total effect of phenotype $X^P$ on expression $Y_g$.
 
-$\tau^{\prime}$: estimated effect of phenotype $X^S$ on expression $Y_g$ after controlling for $X^M_g$, or the direct effect of phenotype on expression.
+$\tau^{\prime}$: estimated effect of phenotype $X^P$ on expression $Y_g$ after controlling for $X^M_g$, or the direct effect of phenotype on expression.
 
-$\alpha$: estimated effect of phenotype$X^S$ on the methylation $X^M_g$.
+$\alpha$: estimated effect of phenotype$X^P$ on the methylation $X^M_g$.
 
 $\beta$: estimated effect of methylation $X^M_g$ on expression $Y_g$ after controlling for phenotype differences.
 
@@ -87,7 +87,7 @@ Sobel's test statistic for mediating effet is
 $$
 t = \frac{\tau - \tau^{\prime}}{se}
 $$
-where $se = \sqrt(\alpha^2\sigma^2_{\beta} + \beta^2 \sigma^2_beta)$, and $\sigma2_{\alpha}$ and $\sigma2_{\beta}$ are standard error of $\alpha$ and $\beta$, respectively.
+where $se = \sqrt(\alpha^2\sigma^2_{\beta} + \beta^2 \sigma^2_{\beta})$, and $\sigma2_{\alpha}$ and $\sigma2_{\beta}$ are standard error of $\alpha$ and $\beta$, respectively.
 
 $~$
 
