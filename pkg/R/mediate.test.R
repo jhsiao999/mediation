@@ -45,7 +45,7 @@ mediate.test <- function(Y, X, M) {
 
   d <- tau-tau_prime
   se <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2)
-  return(list(d=d,
+  return(data.frame(d=d,
               se=se,
               tau=tau,
               tau_prime=tau_prime,
