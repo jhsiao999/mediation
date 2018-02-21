@@ -3,3 +3,4 @@
 export(lm.varyingCovariates)
 export(mediate.simulate)
 export(mediate.test)
+export(mediate.test.regressing)
