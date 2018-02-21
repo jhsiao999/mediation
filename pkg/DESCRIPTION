@@ -1,0 +1,24 @@
+Package: medinome
+Type: Package
+Title: Mediational analysis for genomewide expression data
+Version: 0.0.1
+Date: 2016-03-13
+Authors@R: c(
+    person("Chiaowen Joyce", "Hsiao", email = "joyce.hsiao1@gmail.com", role = c("aut", "cre")),
+    person("Matthew", "Stephens", email = "stephens999@gmail.com", role ="aut"))
+Maintainer: Chiaowen Joyce Hsiao <joyce.hsiao1@gmail.com>
+Description: Tests for mediation effect in the joint analysis of different types of sequencing data
+Depends:
+    R (>= 3.2),
+    ggplot2 (>= 2.1.0)
+URL: https://github.com/jhsial999/pkg
+License: GPL (>= 2)
+LazyData: true
+Encoding: UTF-8
+Imports: limma, parallel, reshape2, stats, utils, graphics, grDevices
+Suggests:
+    knitr, kableExtra, BiocStyle, Biobase, roxygen2, RColorBrewer, devtools, xtable
+VignetteBuilder: knitr
+biocViews: RNASeq, GeneExpression, Sequencing, StatisticalMethod,
+    Software
+RoxygenNote: 6.0.1
