@@ -8,10 +8,6 @@
 #'
 #' @export
 #'
-# Y <- df$exprs_pair
-# X <- df$tissue
-# M <- df$methyl_pair
-
 mediate.test <- function(Y, X, M) {
 
   library(limma)
