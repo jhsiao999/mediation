@@ -8,7 +8,7 @@
 #'
 #' @export
 #'
-mediate.test <- function(Y, X, M) {
+mediate.test.voom <- function(Y, X, M) {
 
   library(limma)
   library(assertthat)
