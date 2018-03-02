@@ -48,7 +48,7 @@ mediate.test <- function(Y, X, M) {
 
   d <- tau-tau_prime
   se.sobel <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2)
-  se.fs <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau*sqrt(1-phi_x.m^2))
+  se.fs <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau_prime*sqrt(1-phi_x.m^2))
 
   return(data.frame(d=d,
               se.sobel=se.sobel,
