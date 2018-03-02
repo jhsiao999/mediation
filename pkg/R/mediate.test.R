@@ -8,6 +8,10 @@
 #'
 #' @export
 #'
+# Y <- df$exprs_pair
+# X <- df$tissue
+# M <- df$methyl_pair
+
 mediate.test <- function(Y, X, M) {
 
   library(limma)
@@ -42,17 +46,26 @@ mediate.test <- function(Y, X, M) {
   beta <- model_3$coefs[,3]
   sigma_alpha <- model_2$stdev.unscaled[,2]*model_2$sigma
   sigma_beta <- model_3$stdev.unscaled[,3]*model_3$sigma
+  sigma_tau <- model_1$stdev.unscaled[,2]*model_1$sigma
+  sigma_tau_prime <- model_3$stdev.unscaled[,2]*model_3$sigma
+  phi_x.m <- sapply(1:nrow(M), function(i) cor(as.integer(X), unlist(M[i,])))
 
   d <- tau-tau_prime
-  se <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2)
+  se.sobel <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2)
+  se.fs <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau*sqrt(1-phi_x.m^2))
+
   return(data.frame(d=d,
-              se=se,
+              se.sobel=se.sobel,
+              se.fs=se.fs,
               tau=tau,
               tau_prime=tau_prime,
               alpha=alpha,
               beta=beta,
               sigma_alpha=sigma_alpha,
-              sigma_beta=sigma_beta
+              sigma_beta=sigma_beta,
+              sigma_tau=sigma_tau,
+              sigma_tau_prime=sigma_tau_prime,
+              phi_x.m = phi_x.m
               ))
 }
 
