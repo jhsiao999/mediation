@@ -52,9 +52,9 @@ mediate.test <- function(Y, X, M) {
 
   return(data.frame(d=d,
               se.sobel=se.sobel,
-              se.fs=se.fs,
               tau=tau,
               tau_prime=tau_prime,
+              ab =alpha*beta,
               alpha=alpha,
               beta=beta,
               sigma_alpha=sigma_alpha,
