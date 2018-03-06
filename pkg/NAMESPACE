@@ -2,6 +2,7 @@
 
 export(compute.se)
 export(lm.varyingCovariates)
+export(lm.varyingCovariates.voom)
 export(mediate.simulate)
 export(mediate.test)
 export(mediate.test.regressing)

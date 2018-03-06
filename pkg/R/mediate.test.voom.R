@@ -54,6 +54,7 @@ mediate.test.voom <- function(Y, X, M) {
               se=se,
               tau=tau,
               tau_prime=tau_prime,
+              ab=alpha*beta,
               alpha=alpha,
               beta=beta,
               sigma_alpha=sigma_alpha,
