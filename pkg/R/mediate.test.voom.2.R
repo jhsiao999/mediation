@@ -8,7 +8,7 @@
 #'
 #' @export
 #'
-mediate.test.voom <- function(Y, X, M) {
+mediate.test.voom.2 <- function(Y, X, M) {
 
   library(limma)
   library(assertthat)
@@ -33,14 +33,13 @@ mediate.test.voom <- function(Y, X, M) {
   Y_voom <- voom(Y_counts, design=design_1, normalize.method = "none")
   model_1 <- lmFit(Y_voom, design_1)
   model_1 <- eBayes(model_1)
-  weights <- Y_voom$weights
 
   # Fitting model 2: M_g = \gamma_{2g} + \alpha X + \epsilon_{2g}
   design_2 <- model.matrix(~X)
   model_2 <- lmFit(M, design_2)
 
   # Fitting model 3: M_g = \gamma_{3g} + \tau^{\prime}_g X + \beta_g M_g \epsilon_{3g}
-  model_3 <- lm.varyingCovariates.voom(Y=Y, X=X, M=M, weights = weights)
+  model_3 <- lm.varyingCovariates.voom(Y=Y, X=X, M=M)
 
   tau <- coef(model_1)[,2]
   tau_prime <- model_3$coefs[,2]
@@ -49,28 +48,19 @@ mediate.test.voom <- function(Y, X, M) {
   sigma_alpha <- model_2$stdev.unscaled[,2]*model_2$sigma
   sigma_beta <- model_3$stdev.unscaled[,3]*model_3$sigma
   sigma_tau <- model_1$stdev.unscaled[,2]*model_1$sigma
-  sigma_tau_prime <- model_3$stdev.unscaled[,2]*model_3$sigma
+  sigma_tau_prime <- model_1$stdev.unscaled[,2]*model_1$sigma
 
-  corr.ym <- sapply(1:nrow(Y), function(g) {
-    cor(Y[g,], M[g,])
-  })
-
-  se.sobel <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2)
-  se.fs <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau_prime*sqrt(1-corr.ym^2))
-
-  return(data.frame(d=tau-tau_prime,
-              se.sobel=se.sobel,
-              se.fs=se.fs,
+  d <- tau-tau_prime
+  se <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2)
+  return(data.frame(d=d,
+              se=se,
               tau=tau,
               tau_prime=tau_prime,
               ab=alpha*beta,
               alpha=alpha,
               beta=beta,
               sigma_alpha=sigma_alpha,
-              sigma_beta=sigma_beta,
-              sigma_tau = sigma_tau,
-              sigma_tau_prime=sigma_tau_prime,
-              corr.ym=corr.ym
+              sigma_beta=sigma_beta
   ))
 }
 

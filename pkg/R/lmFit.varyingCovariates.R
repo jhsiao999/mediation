@@ -41,9 +41,14 @@ lm.varyingCovariates <- function(Y, X, M) {
     sqrt(sum(x$residuals^2)/x$df.residual)
   })
 
+  predicted <- do.call(rbind, lapply(fits, function(x) {
+    x$fitted.values
+  }))
+
   return(list(coefs=coefs,
               stdev.unscaled=stdev.unscaled,
-              sigma=sigma))
+              sigma=sigma,
+              predicted=predicted))
 }
 
 
