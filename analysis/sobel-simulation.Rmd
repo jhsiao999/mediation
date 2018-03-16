@@ -1,0 +1,172 @@
+---
+title: "Simulation - use cases"
+author: "Joyce Hsiao"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: FALSE
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '9.'+n}
+      } 
+  }
+});
+</script>
+
+---
+
+## Background and summary
+
+Suppose there's phenotypic difference in expression, then this difference could be indirectly due to phenotypic differences in methylation or in other words, this difference could be explained by phenotic difference or mediated by phenotypic difference in methylation. 
+
+I simulate several case scenarios
+
+Case 1: High phenotypic difference in expression and high phentypic difference in methylation: here the correlation beween expression and methylation is high; and after accounting for phenotypic difference in methylation, there'e small phenotypic difference in expression, or in other words, there's a large reduction in the phenotypic effect on expression after accounting for methylation, in other words, the effect of phenotype on expression is mostly mediated by methylation.
+
+Case 2: High phenotypic difference in expression and high phentypic difference in methylation, but in opposite direction: here the correlation beween expression and methylation is high but in opposite direction; after accounting for phenotypic difference in methylation, there'e small phenotypic difference in expression, or in other words, there's a large reduction in the phenotypic effect on expression after accounting for methylation, in other words, the effect of phenotype on expression is mostly mediated by methylation.
+
+Case 3: High phenotypic difference in expression and low phentypic difference in methylation: here the correlation beween expression and methylation is low; so after phenotypic difference in expression is unaffected by phenotypic difference in methylation, in other words, the effect of phenotype on expression doesnt' change much after including methylation as a covariate, alternatively, there's small/weak indirect effect of phenotype on expression after accounting for methylation, in other words, methylation doesn't mediate or explain much of the association between phenotype and expression
+
+
+---
+
+## Data and packages
+
+```{r load-package}
+library(medinome)
+```
+
+---
+
+
+## Simulation scenarios
+
+Simulation code
+
+```{r simulation-code}
+sim_fun <- function(n_each, expr_means, expr_sds,
+                            methyl_means, methyl_sds) {
+#  n_each <- 40
+#  set.seed(unif(10^6,1))
+  pheno <- factor(rep(c(0,1), each = n_each), levels=c(0,1))
+  expr <- c(rnorm(n_each, expr_means[1], expr_sds[1]), 
+            rnorm(n_each, expr_means[2], expr_sds[2]))
+  methyl <- c(rnorm(n_each, methyl_means[1], methyl_sds[1]), 
+              rnorm(n_each, methyl_means[2], methyl_sds[2]))
+  dat <- data.frame(pheno, expr, methyl)
+  m1 <- lm(expr~pheno-1)
+  m2 <- lm(methyl~pheno-1)
+  m3 <- lm(expr~pheno+methyl-1)
+  tau <- m1$coef[2]
+  tau_prime <- m3$coef[2]
+  alpha <- m2$coef[2]
+  beta <- m3$coef[3]
+  sigma2_alpha <- summary(m2)$coef[2,2]^2
+  sigma2_beta <- summary(m3)$coef[3,2]^2
+  d <- tau-tau_prime
+  d_se <- sqrt((alpha^2)*sigma2_beta+(beta^2)*sigma2_alpha)
+  df <- (n_each*2)-2
+  pval <- 2*pt(abs(d/d_se), df, lower.tail=F)
+  return(list(df=dat,
+  res=data.frame(tau,tau_prime,alpha,beta,d,d_se,pval,
+  corr=cor(expr,methyl)))) }
+```
+
+## Case 1: strong positive, same direction
+
+```{r case 1}
+p1 <- lapply(1:50, function(i) sim_fun(n_each=40, 
+                                       expr_means=c(0,2), expr_sds=rep(.5,2),
+                                       methyl_means=c(0,2), methyl_sds=rep(.5,2)) )
+dat1 <- lapply(p1, function(x) x[[1]])
+pp1 <- do.call(rbind, lapply(p1, function(x) x[[2]]))
+dat1.list <- list(Y=do.call(rbind, lapply(dat1, "[[", 2)), X = dat1[[1]]$pheno,
+M=do.call(rbind, lapply(dat1, "[[", 3)))
+
+summary(pp1$corr)
+pp1$corr[which.max(pp1$corr)]
+ii1 <- which.max(pp1$corr)
+par(mfrow=c(2,2))
+with(dat1[[ii1]], plot(expr~pheno))
+with(dat1[[ii1]], plot(methyl~pheno))
+with(dat1[[ii1]], {
+plot(expr~methyl, col=c(1,2)[pheno]);
+abline(lm(expr~methyl)) }) 
+```
+
+
+## Case 2: Strong negative correlation
+
+```{r case 2}
+p2 <- lapply(1:50, function(i) sim_fun(n_each=40, 
+                                       expr_means=c(0,1.5), expr_sds=rep(.5,2),
+                                       methyl_means=c(1.5,0), methyl_sds=rep(.5,2)) )
+dat2 <- lapply(p2, function(x) x[[1]])
+pp2 <- do.call(rbind, lapply(p2, function(x) x[[2]]))
+
+summary(pp2$corr)
+pp2$corr[which.min(pp2$corr)]
+ii2 <- which.max(pp2$corr)
+par(mfrow=c(2,2))
+with(dat2[[ii2]], plot(expr~pheno))
+with(dat2[[ii2]], plot(methyl~pheno))
+with(dat2[[ii2]], {
+plot(expr~methyl, col=c(1,2)[pheno]);
+abline(lm(expr~methyl)) }) 
+```
+
+## Case 3: Moderately weak positive
+
+```{r case 3}
+p3 <- lapply(1:50, function(i) sim_fun(n_each=40, 
+                                       expr_means=c(0,2), expr_sds=rep(.5,2),
+                                       methyl_means=c(0,0), methyl_sds=rep(.5,2)) )
+dat3 <- lapply(p3, function(x) x[[1]])
+pp3 <- do.call(rbind, lapply(p3, function(x) x[[2]]))
+
+ii3 <- which(abs(pp3$corr)<.002)[1]
+par(mfrow=c(2,2))
+with(dat3[[1]], plot(expr~pheno))
+with(dat3[[1]], plot(methyl~pheno))
+with(dat3[[1]], {
+plot(expr~methyl, col=c(1,2)[pheno]);
+abline(lm(expr~methyl)) }) 
+
+summary(pp3$corr)
+```
+
+
+
+---
+
+## Session information
+
+```{r}
+sessionInfo()
+```
+
+
