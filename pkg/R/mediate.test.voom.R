@@ -51,12 +51,12 @@ mediate.test.voom <- function(Y, X, M) {
   sigma_tau <- model_1$stdev.unscaled[,2]*model_1$sigma
   sigma_tau_prime <- model_3$stdev.unscaled[,2]*model_3$sigma
 
-  corr.ym <- sapply(1:nrow(Y), function(g) {
-    cor(Y[g,], M[g,])
+  corr.xm <- sapply(1:nrow(Y), function(g) {
+    cor(as.numeric(X), M[g,])
   })
 
   se.sobel <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2)
-  se.fs <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau_prime*sqrt(1-corr.ym^2))
+  se.fs <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau_prime*sqrt(1-corr.xm^2))
 
   return(data.frame(d=tau-tau_prime,
               se.sobel=se.sobel,
@@ -70,7 +70,7 @@ mediate.test.voom <- function(Y, X, M) {
               sigma_beta=sigma_beta,
               sigma_tau = sigma_tau,
               sigma_tau_prime=sigma_tau_prime,
-              corr.ym=corr.ym
+              corr.xm=corr.xm
   ))
 }
 
