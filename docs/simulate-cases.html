@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Joyce Hsiao" />
+
+
+<title>Simulate study of varying correlations between X and M</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">mediation</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jdblischak/workflowr">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Simulate study of varying correlations between X and M</h1>
+<h4 class="author"><em>Joyce Hsiao</em></h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#data-and-packages">Data and packages</a></li>
+<li><a href="#simulations-change-in-tau.prime">Simulations: change in tau.prime</a></li>
+<li><a href="#simulations-multicollinearity-and-change-from-tau-to-tau.prime">Simulations: multicollinearity and change from tau to tau.prime</a></li>
+<li><a href="#simulations-correlation-between-y-and-m-and-change-from-tau-to-tau.prime">Simulations: correlation between Y and M and change from tau to tau.prime</a></li>
+<li><a href="#heart-vs.kidney-data">Heart vs. Kidney data</a></li>
+<li><a href="#conclusions">Conclusions</a></li>
+<li><a href="#session-information">Session information</a></li>
+</ul>
+</div>
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<pre><code>Warning in as.POSIXlt.POSIXct(Sys.time()): unknown timezone &#39;zone/tz/2018c.
+1.0/zoneinfo/America/Chicago&#39;</code></pre>
+<p><strong>Last updated:</strong> 2018-03-20</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> 9032a51</p>
+<hr />
+<div id="data-and-packages" class="section level2">
+<h2>Data and packages</h2>
+<pre class="r"><code>library(medinome)</code></pre>
+<pre><code>Loading required package: ggplot2</code></pre>
+<pre class="r"><code>library(limma)</code></pre>
+<pre><code>Warning: package &#39;limma&#39; was built under R version 3.4.3</code></pre>
+<pre class="r"><code>library(qvalue)</code></pre>
+<pre><code>Warning: package &#39;qvalue&#39; was built under R version 3.4.2</code></pre>
+<pre class="r"><code>library(ashr)</code></pre>
+<pre><code>Warning: package &#39;ashr&#39; was built under R version 3.4.3</code></pre>
+<hr />
+</div>
+<div id="simulations-change-in-tau.prime" class="section level2">
+<h2>Simulations: change in tau.prime</h2>
+<p>Example 1: when X and M are not correlated, then there’s no difference between regressing out and the single-mediator approach.</p>
+<pre class="r"><code>n &lt;- 10
+mu_y &lt;- c(-1,1)
+xx &lt;- rep(c(1,2), each = n)
+yy &lt;- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm &lt;- rnorm(2*n)
+
+plot(x=mm, y = yy,
+     col=xx)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>fit &lt;- lm(yy~factor(xx))
+
+fit.joint &lt;- lm(yy~factor(xx)+mm)
+
+y.resid &lt;- residuals(lm(yy~mm))
+fit.reg &lt;- lm(y.resid~factor(xx))
+
+
+coef(summary(fit))</code></pre>
+<pre><code>             Estimate Std. Error   t value     Pr(&gt;|t|)
+(Intercept) -1.132944  0.2617891 -4.327697 4.054294e-04
+factor(xx)2  2.418922  0.3702258  6.533640 3.849564e-06</code></pre>
+<pre class="r"><code>coef(summary(fit.joint))</code></pre>
+<pre><code>              Estimate Std. Error    t value     Pr(&gt;|t|)
+(Intercept) -1.1462347  0.2625035 -4.3665501 4.203115e-04
+factor(xx)2  2.3167681  0.3852565  6.0135738 1.396135e-05
+mm           0.1593831  0.1634743  0.9749734 3.432439e-01</code></pre>
+<pre class="r"><code>coef(summary(fit.reg))</code></pre>
+<pre><code>             Estimate Std. Error   t value     Pr(&gt;|t|)
+(Intercept) -1.072705  0.2740738 -3.913927 1.017349e-03
+factor(xx)2  2.145409  0.3875988  5.535128 2.960225e-05</code></pre>
+<p>Example 2: when X and M are positively correlated, including M in the model increases the magnitude of the coefficient for X.</p>
+<pre class="r"><code>n &lt;- 10
+mu_y &lt;- c(-1,1)
+xx &lt;- rep(c(1,2), each = n)
+cor &lt;- .5
+yy &lt;- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm &lt;- xx*cor + rnorm(2*n)
+
+plot(x=mm, y = yy,
+     col=xx)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>fit &lt;- lm(yy~factor(xx))
+
+fit.joint &lt;- lm(yy~factor(xx)+mm)
+
+y.resid &lt;- residuals(lm(yy~mm))
+fit.reg &lt;- lm(y.resid~factor(xx))
+
+
+coef(summary(fit))</code></pre>
+<pre><code>             Estimate Std. Error   t value     Pr(&gt;|t|)
+(Intercept) -1.062910  0.4176090 -2.545227 0.0203013034
+factor(xx)2  2.336172  0.5905884  3.955669 0.0009269952</code></pre>
+<pre class="r"><code>coef(summary(fit.joint))</code></pre>
+<pre><code>               Estimate Std. Error    t value   Pr(&gt;|t|)
+(Intercept) -1.03270042  0.4527018 -2.2811933 0.03570079
+factor(xx)2  2.38912799  0.6573810  3.6343124 0.00205036
+mm          -0.05771885  0.2752848 -0.2096696 0.83641767</code></pre>
+<pre class="r"><code>coef(summary(fit.reg))</code></pre>
+<pre><code>             Estimate Std. Error   t value   Pr(&gt;|t|)
+(Intercept) -1.018232  0.4403375 -2.312391 0.03279458
+factor(xx)2  2.036465  0.6227313  3.270214 0.00425171</code></pre>
+<p>Example 3: when X and M are correlated, including M in the model increases the magnitude of the coefficient for X.</p>
+<pre class="r"><code>n &lt;- 10
+mu_y &lt;- c(-1,1)
+xx &lt;- rep(c(1,2), each = n)
+cor &lt;- -2
+yy &lt;- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm &lt;- xx*cor + rnorm(2*n)
+
+plot(x=mm, y = yy,
+     col=xx)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>fit &lt;- lm(yy~factor(xx))
+
+fit.joint &lt;- lm(yy~factor(xx)+mm)
+
+y.resid &lt;- residuals(lm(yy~mm))
+fit.reg &lt;- lm(y.resid~factor(xx))
+
+
+coef(summary(fit))</code></pre>
+<pre><code>              Estimate Std. Error    t value   Pr(&gt;|t|)
+(Intercept) -0.1574929  0.3260367 -0.4830527 0.63488144
+factor(xx)2  1.1316104  0.4610855  2.4542311 0.02452807</code></pre>
+<pre class="r"><code>coef(summary(fit.joint))</code></pre>
+<pre><code>              Estimate Std. Error    t value  Pr(&gt;|t|)
+(Intercept) -0.2721087  0.6260328 -0.4346557 0.6692795
+factor(xx)2  1.0406218  0.6330391  1.6438508 0.1185716
+mm          -0.0542894  0.2504937 -0.2167296 0.8309986</code></pre>
+<pre class="r"><code>coef(summary(fit.reg))</code></pre>
+<pre><code>              Estimate Std. Error    t value  Pr(&gt;|t|)
+(Intercept) -0.2914674  0.3367761 -0.8654634 0.3981731
+factor(xx)2  0.5829349  0.4762734  1.2239501 0.2367509</code></pre>
+<p>Conclusion: When X and M are positively correlated, including M in the linear model of Y ~ X leads to an increase in the effect size of X (i.e., the effect size of X increases conditioned on values of M). When X and M are negatively correlated, including M in the linear model of Y ~ M leads to a decrease in the effect sizes of X.</p>
+<hr />
+</div>
+<div id="simulations-multicollinearity-and-change-from-tau-to-tau.prime" class="section level2">
+<h2>Simulations: multicollinearity and change from tau to tau.prime</h2>
+<p>In the multiple predictor approach, the regression coefficient of X is equivalent to regressing the <strong>residuals of X fitted on M</strong> onto the <strong>residuals of Y fitted on M</strong>.</p>
+<p>In the regressing out approach, the regression coefficient of X is equivalent to regressing the X onto the <strong>residuals of Y fitted on M</strong>.</p>
+<pre class="r"><code>n &lt;- 10
+mu_y &lt;- c(-1,1)
+xx &lt;- rep(c(1,2), each = n)
+cor.list &lt;- seq(-5, 5, .1)
+yy &lt;- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm.list &lt;- lapply(1:length(cor.list), function(i) xx*cor.list[[i]] + rnorm(2*n))
+
+res &lt;- do.call(rbind, lapply(1:length(cor.list), function(i) {
+  fit &lt;- lm(yy~factor(xx))
+  fit.joint &lt;- lm(yy~factor(xx)+mm.list[[i]])
+  y.resid &lt;- residuals(lm(yy~mm.list[[i]]))
+  fit.reg &lt;- lm(y.resid~factor(xx))
+  
+  data.frame(d.joint=coef(summary(fit))[2,1]-coef(summary(fit.joint))[2,1],
+             d.reg=coef(summary(fit))[2,1]-coef(summary(fit.reg))[2,1])
+}))</code></pre>
+<pre class="r"><code>corrs &lt;- sapply(1:length(cor.list), function(i) cor(mm.list[[i]], xx))
+
+par(mfrow=c(2,2))
+plot(corrs, res$d.joint,
+     xlab = &quot;Correlation between X and M&quot;,
+     ylab = &quot;tau-tau.prime&quot;)
+points(corrs, res$d.reg, col = &quot;red&quot;)
+legend(&quot;top&quot;, legend =c(&quot;joint model&quot;, &quot;regressing out approach&quot;), 
+       col = c(1,2), pch =1, cex=.3)
+
+mm.diff &lt;- sapply(1:length(mm.list), function(i) coef(lm(mm.list[[i]]~factor(xx)))[2])
+plot(mm.diff, res$d.joint,
+     xlab = &quot;Condition differences in M&quot;,
+     ylab = &quot;tau-tau.prime&quot;)
+points(mm.diff, res$d.reg, col = &quot;red&quot;)
+legend(&quot;top&quot;, legend =c(&quot;joint model&quot;, &quot;regressing out approach&quot;), 
+       col = c(1,2), pch =1, cex=.3)
+
+plot(mm.diff, corrs,
+     xlab = &quot;Condition differences in M&quot;,
+     ylab = &quot;Correlation between X and M&quot;)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>par(mfrow=c(1,1))
+plot(corrs, res$d.joint, ylim=range(c(res$d.joint, res$d.reg)),
+     xlab = &quot;Correlation between X and M&quot;,
+     ylab = &quot;tau-tau.prime&quot;)
+points(corrs, res$d.reg, col = &quot;red&quot;)
+legend(&quot;top&quot;, legend =c(&quot;joint model&quot;, &quot;regressing out approach&quot;), 
+       col = c(1,2), pch =1, cex=.7)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-7-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p>Conclusion:</p>
+<ol style="list-style-type: decimal">
+<li><p>In the regressing out approach, the coefficient of X decreases always. However, the partial regressing coefficient of X in the joint modeling approach increases always. The two approaches give similar results when there’s little correlation between X and M. The two regressing coefficients model different effects. In the regressing out approach, the coefficient corresponds to the effect of species on expression after removing variation due to methylation, while the coefficient in the joint modeling approach corresponds to the effect of species on expression after removing variation due to methylation and at a fix level of methylation. So in the regressing out approach, we are not accounting for species differences in methylation, while the joint modelling approach estimate expression differences given no species differences in methylation.</p></li>
+<li><p>It is conceivable why there’s fewer differences in tau-tau.prime in the permutated data. Fewer genes now have significant correlation between X and M, which then translates into small chnages in tau.prime. The results that there are more significant tau-tau.prime in the permutated data can be interpretated as: after removing species differences in methylation, there are way more significant effects in expression; in other words, species differences in expression were previously suppressed by differences in methylation.</p></li>
+</ol>
+<hr />
+</div>
+<div id="simulations-correlation-between-y-and-m-and-change-from-tau-to-tau.prime" class="section level2">
+<h2>Simulations: correlation between Y and M and change from tau to tau.prime</h2>
+<p>In the multiple predictor approach, the regression coefficient of X is equivalent to regressing the <strong>residuals of X fitted on M</strong> onto the <strong>residuals of Y fitted on M</strong>.</p>
+<p>In the regressing out approach, the regression coefficient of X is equivalent to regressing the X onto the <strong>residuals of Y fitted on M</strong>.</p>
+<pre class="r"><code>n &lt;- 10
+mu_y &lt;- c(-1,1)
+xx &lt;- rep(c(1,2), each = n)
+cor.list &lt;- seq(-5, 5, .1)
+yy &lt;- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm.list &lt;- lapply(1:length(cor.list), function(i) yy*cor.list[[i]] + rnorm(2*n))
+
+res &lt;- do.call(rbind, lapply(1:length(cor.list), function(i) {
+  fit &lt;- lm(yy~factor(xx))
+  fit.joint &lt;- lm(yy~factor(xx)+mm.list[[i]])
+  y.resid &lt;- residuals(lm(yy~mm.list[[i]]))
+  fit.reg &lt;- lm(y.resid~factor(xx))
+  
+  data.frame(d.joint=coef(summary(fit))[2,1]-coef(summary(fit.joint))[2,1],
+             d.reg=coef(summary(fit))[2,1]-coef(summary(fit.reg))[2,1])
+}))</code></pre>
+<pre class="r"><code>corrs &lt;- sapply(1:length(cor.list), function(i) cor(mm.list[[i]], xx))
+
+par(mfrow=c(2,2))
+plot(corrs, res$d.joint,
+     xlab = &quot;Correlation between Y and M&quot;,
+     ylab = &quot;tau-tau.prime&quot;)
+points(corrs, res$d.reg, col = &quot;red&quot;)
+legend(&quot;top&quot;, legend =c(&quot;joint model&quot;, &quot;regressing out approach&quot;), 
+       col = c(1,2), pch =1, cex=.4)
+
+mm.diff &lt;- sapply(1:length(mm.list), function(i) coef(lm(mm.list[[i]]~factor(xx)))[2])
+plot(mm.diff, res$d.joint,
+     xlab = &quot;Condition differences in M&quot;,
+     ylab = &quot;tau-tau.prime&quot;)
+points(mm.diff, res$d.reg, col = &quot;red&quot;)
+legend(&quot;top&quot;, legend =c(&quot;joint model&quot;, &quot;regressing out approach&quot;), 
+       col = c(1,2), pch =1, cex=.4)
+
+plot(mm.diff, corrs,
+     xlab = &quot;Condition differences in M&quot;,
+     ylab = &quot;Correlation between X and M&quot;)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<hr />
+</div>
+<div id="heart-vs.kidney-data" class="section level2">
+<h2>Heart vs. Kidney data</h2>
+<p>Take from Lauren’s data comparing kidney versus heart tissue samples.</p>
+<pre class="r"><code>df &lt;- get(load(&quot;../data/example-kidney-v-heart-human.rda&quot;))
+Y=df$exprs_pair
+X=df$tissue
+M=df$methyl_pair
+
+# scale gene expression to mean 0 and standard deviation 1 for each gene
+Y &lt;- t(scale(t(Y)))
+M &lt;- t(scale(t(M)))
+
+# apply limma to scaled expression to select DE genes
+design_1 &lt;- model.matrix(~X)
+Y_counts &lt;- 2^Y
+Y_voom &lt;- voom(Y_counts, design=design_1, normalize.method = &quot;none&quot;)
+model_1 &lt;- lmFit(Y_voom, design_1)
+model_1 &lt;- eBayes(model_1)
+
+# qvaule package for FDR control
+qval &lt;- qvalue(model_1$p.value[,2])
+
+# select DE genes with q-value  &lt; .05
+ii.de &lt;- which(qval$qvalues &lt; .05)
+Y.de &lt;- Y[ii.de, ]
+M.de &lt;- M[ii.de, ]
+
+# fitting mediation test
+fit.voom &lt;- mediate.test.voom(Y=Y.de, X=X, M=M.de)
+
+
+# create a permutated dataset
+M.permute &lt;- do.call(rbind, lapply(1:nrow(M.de), function(g) {
+  m.perm &lt;- sample(M.de[g,])
+  return(m.perm)
+  }))
+
+fit.voom.perm &lt;- mediate.test.voom(Y=Y.de, X=X, M=M.permute)
+nsam &lt;- ncol(Y.de)
+
+
+# fit ash and get s-values
+nsam &lt;- ncol(Y.de)
+fit.ash &lt;- ash(fit.voom$d,
+               fit.voom$se.fs, df=nsam-2,
+               mixcompdist = &quot;uniform&quot;,
+               method = &quot;fdr&quot;)
+
+fit.ash.perm &lt;- ash(fit.voom.perm$d, fit.voom.perm$se.fs, 
+                     df=nsam-2,
+                     mixcompdist = &quot;uniform&quot;,
+                     method = &quot;fdr&quot;)</code></pre>
+<pre class="r"><code>mean(fit.ash$result$svalue&lt;.01)</code></pre>
+<pre><code>[1] 0.4040805</code></pre>
+<pre class="r"><code>mean(fit.ash.perm$result$svalue&lt;.01)</code></pre>
+<pre><code>[1] 0.4947577</code></pre>
+<p>For most of the genes, s-value becomes smaller.</p>
+<pre class="r"><code>plot(fit.ash$result$svalue,
+     fit.ash.perm$result$svalue)
+abline(0,1, col = &quot;blue&quot;)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># genes turned signficant in permuted data and not in the original data
+ii &lt;- which(fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01)
+length(ii)</code></pre>
+<pre><code>[1] 807</code></pre>
+<pre class="r"><code># after permutation, there are more small effect sizes
+ind &lt;- fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01
+par(mfrow=c(2,2))
+plot(fit.ash$result$betahat, fit.ash.perm$result$betahat,
+     col = as.numeric(ind) + 1)
+plot(fit.ash$result$PosteriorMean, fit.ash.perm$result$PosteriorMean,
+     col = as.numeric(ind) + 1)
+plot(fit.ash$result$betahat, fit.ash$result$PosteriorMean,
+     col = as.numeric(ind) + 1)
+plot(fit.ash.perm$result$betahat, fit.ash.perm$result$PosteriorMean,
+     col = as.numeric(ind) + 1)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-12-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>par(mfrow=c(1,2))
+plot(fit.ash$result$betahat,
+     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
+     col = as.numeric(fit.ash.perm$result$svalue &lt; .01)+1)
+plot(fit.ash.perm$result$betahat,
+     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
+     col = as.numeric(fit.ash.perm$result$svalue &lt; .01)+1)
+title(&quot;permuted s-value &lt; .01&quot;, outer = TRUE, line = -1)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-12-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>par(mfrow=c(1,2))
+plot(fit.ash$result$betahat,
+     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
+     col = as.numeric(fit.ash$result$svalue &lt; .01)+1)
+plot(fit.ash.perm$result$betahat,
+     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
+     col = as.numeric(fit.ash$result$svalue &lt; .01)+1)
+title(&quot;permuted s-value &lt; .01&quot;, outer = TRUE, line = -1)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-12-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p>why se smaller in permuted data!! consider the composition of the standard error…</p>
+<ol style="list-style-type: decimal">
+<li>Why sigma tau_prime smaller in the permuted data?</li>
+</ol>
+<pre class="r"><code>par(mfrow=c(1,2))
+ind &lt;- fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01
+plot(fit.voom$sigma_tau_prime,
+     fit.voom.perm$sigma_tau_prime,
+       col = as.numeric(ind) + 1)
+
+ind2 &lt;- fit.ash.perm$result$svalue &gt; .01 &amp; fit.ash$result$svalue &lt; .01
+plot(fit.voom$sigma_tau_prime,
+     fit.voom.perm$sigma_tau_prime,
+       col = as.numeric(ind2) + 1)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>How about the correlation between X and M? Seems that after permutation, some genes go from no correlation between X and M (i.e., no methylation difference) to significant correlation between these two, which consequently results in smaller standard error for tau-tau_prime.</p>
+<pre class="r"><code>par(mfrow=c(1,2))
+ind &lt;- fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01
+plot(fit.voom$sigma_tau_prime,
+     fit.voom$corr.xm,
+       col = as.numeric(ind) + 1)
+
+ind &lt;- fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01
+plot(fit.voom.perm$sigma_tau_prime,
+     fit.voom.perm$corr.xm,
+       col = as.numeric(ind) + 1)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Correlation and svalue.</p>
+<pre class="r"><code>par(mfrow=c(1,2))
+plot(fit.voom$corr.xm,
+     fit.ash$result$svalue)
+plot(fit.voom.perm$corr.xm,
+     fit.ash.perm$result$svalue)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Additional analysis: conditioned on species differences in methylation. Only 5% DE genes have significant species differences in methylation.</p>
+<pre class="r"><code>fit.M &lt;- lmFit(M.de, design=model.matrix(~X))
+fit.M &lt;- eBayes(fit.M)
+
+fit.M.sval &lt;- ash(fit.M$coefficients[,2],
+                  fit.M$stdev.unscaled[,2]*fit.M$sigma,
+                  df = length(X)-2)
+
+mean(fit.M.sval$result$svalue &lt; .01)</code></pre>
+<pre><code>[1] 0.05327288</code></pre>
+</div>
+<div id="conclusions" class="section level2">
+<h2>Conclusions</h2>
+<ol style="list-style-type: decimal">
+<li><p>The regressing out approach removes variation due to methylation in expession. In the case where there’s large species differene in methylation (all assuming DE expression genes here), then species differences in expression will reduce in the corrected model.</p></li>
+<li><p>Considering the joint modeling approach, when there’s no species difference in methylation, including it as a covariate does not change the coefficient of species. If species is correlated with methylation, then there are two possiblities that may occur: 1) the effect of species on expression increased or enhanced after including methylation as a covariate, 2) the effect of species on experssion reduced after including methylation as a covariate. The former suggests that methylation differences in species actually “suppress” the effect of species on expression, such that by controlling for it, we observe a larger difference. The latter suggets that methylation differences in species actually mediates the effect of species on experssion, such that by including it as a covariate, the effect of species on expression attenuates.</p></li>
+<li><p>Permutation test: The permutation induces smaller correlations between X and M than the non-permuted data between species and methylatin. Small correlation between X and M translates into small standard error. This is probably why there are so many more significant results in the permuted data. Note that although there are more small effects in the permuted data, but the effect of standard error (order of 1 difference) outweights the small change in effect size. A quick test of Lauren’s data showed that the correlation distribution determines the signal of species differences after controlling for methylation. In fact, the result that there are more significant direct effect in the permuted data makes total sesnse, this means that smaller speciees differences between methylation corresponds to stronger species differences in expression.</p></li>
+<li><p>But how to explain differences between species coefficient in the “regressing out” aproach versus that in the single-mediator model?? In the “regressing out” approach, the effect corresponds to the effect of species on expression adjusted for correlation with methylation, regardless of species differences in methylation. In the single-mediator model or aka the joint modeling approach, the effect corresponds to the effect of species on expression after adjusting for correlation with methylation and also the differences between species in methylation. After permutation when there are no methylation differences, the effects are largely unchanged in the “regressing out” approach, so there are fewer signfiicant effect in the permuted data versus in the real data. On the contrary, in the joint modeling approach, the previously signficant differences between species that could be contributed to methylation differences are now associated with much smaller methylation differences, so the effect due to species on expression alone are bigger, and hence the smaller change in the marginal effect of species on expression. In summary, the “regressing out” approach doesn’t account for species differences in methylation, it asks what would happen if the variation in expression is not due to methylation at all, and the results tell us that species differences in expression would be greater; in other words, the effect of species on expression is suppressed by correlation (negative?) between methylation and expression. The joint modeling approach, on the other hand, it asks what woudl happen if the variation in expression is not due to methylation, and if there’s no species differences in methylation, and the results suggest that without species differences in methylation (increase in null correlation in the permuted data), the effect of species on expression is greater, which also support the hypothesis that species differences in methylation suppress species differences in expression.</p></li>
+</ol>
+<hr />
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.4.1 (2017-06-30)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS High Sierra 10.13
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] assertthat_0.2.0 ashr_2.2-7       qvalue_2.10.0    limma_3.34.9    
+[5] medinome_0.0.1   ggplot2_2.2.1   
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.15      pillar_1.2.1      compiler_3.4.1   
+ [4] git2r_0.21.0      plyr_1.8.4        iterators_1.0.9  
+ [7] tools_3.4.1       etrunct_0.1       digest_0.6.15    
+[10] evaluate_0.10.1   tibble_1.4.2      gtable_0.2.0     
+[13] lattice_0.20-35   rlang_0.2.0       Matrix_1.2-12    
+[16] foreach_1.4.4     yaml_2.1.18       parallel_3.4.1   
+[19] stringr_1.3.0     knitr_1.20        REBayes_1.3      
+[22] rprojroot_1.3-2   grid_3.4.1        rmarkdown_1.9    
+[25] reshape2_1.4.3    magrittr_1.5      backports_1.1.2  
+[28] scales_0.5.0      codetools_0.2-15  htmltools_0.3.6  
+[31] splines_3.4.1     MASS_7.3-49       colorspace_1.3-2 
+[34] stringi_1.1.6     Rmosek_8.0.69     lazyeval_0.2.1   
+[37] munsell_0.4.3     doParallel_1.0.11 pscl_1.5.2       
+[40] truncnorm_1.0-8   SQUAREM_2017.10-1</code></pre>
+</div>
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
