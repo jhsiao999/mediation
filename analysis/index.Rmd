@@ -6,6 +6,8 @@ output:
     toc_float: FALSE
 ---
 
+---
+
 Share results of analyzing mediation effects at the gene-level for sequencing data.
 
 Notations: 
@@ -15,7 +17,7 @@ Y: response variable
 M: mediating or intervening variable  
 
 
-## Compare the effect of condition X on response Y after accounting for a third variable M
+## Effect of X on Y after accounting for M
 
 1. I first apply a "regressing out" approach and derive mean and covariate estimates for the effect size of the differences between the effect of X on Y and the effect of X on Y after regressing M out of Y. [Download PDF](docs/covariateTest.pdf)
 
