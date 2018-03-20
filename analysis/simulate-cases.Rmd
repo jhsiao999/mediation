@@ -1,0 +1,442 @@
+---
+title: "Simulate study of varying correlations between X and M"
+author: "Joyce Hsiao"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: FALSE
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+
+---
+
+## Data and packages
+
+```{r}
+library(medinome)
+library(limma)
+library(qvalue)
+library(ashr)
+```
+
+---
+
+## Simulations: change in tau.prime
+
+Example 1: when X and M are not correlated, then there's no difference between regressing out and the single-mediator approach.
+
+```{r}
+n <- 10
+mu_y <- c(-1,1)
+xx <- rep(c(1,2), each = n)
+yy <- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm <- rnorm(2*n)
+
+plot(x=mm, y = yy,
+     col=xx)
+
+fit <- lm(yy~factor(xx))
+
+fit.joint <- lm(yy~factor(xx)+mm)
+
+y.resid <- residuals(lm(yy~mm))
+fit.reg <- lm(y.resid~factor(xx))
+
+
+coef(summary(fit))
+coef(summary(fit.joint))
+coef(summary(fit.reg))
+```
+
+Example 2: when X and M are positively correlated, including M in the model increases the magnitude of the coefficient for X. 
+
+```{r}
+n <- 10
+mu_y <- c(-1,1)
+xx <- rep(c(1,2), each = n)
+cor <- .5
+yy <- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm <- xx*cor + rnorm(2*n)
+
+plot(x=mm, y = yy,
+     col=xx)
+
+fit <- lm(yy~factor(xx))
+
+fit.joint <- lm(yy~factor(xx)+mm)
+
+y.resid <- residuals(lm(yy~mm))
+fit.reg <- lm(y.resid~factor(xx))
+
+
+coef(summary(fit))
+coef(summary(fit.joint))
+coef(summary(fit.reg))
+```
+
+
+Example 3: when X and M are correlated, including M in the model increases the magnitude of the coefficient for X. 
+
+```{r}
+n <- 10
+mu_y <- c(-1,1)
+xx <- rep(c(1,2), each = n)
+cor <- -2
+yy <- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm <- xx*cor + rnorm(2*n)
+
+plot(x=mm, y = yy,
+     col=xx)
+
+fit <- lm(yy~factor(xx))
+
+fit.joint <- lm(yy~factor(xx)+mm)
+
+y.resid <- residuals(lm(yy~mm))
+fit.reg <- lm(y.resid~factor(xx))
+
+
+coef(summary(fit))
+coef(summary(fit.joint))
+coef(summary(fit.reg))
+```
+
+Conclusion: When X and M are positively correlated, including M in the linear model of Y ~ X leads to an increase in the effect size of X (i.e., the effect size of X increases conditioned on values of M). When X and M are negatively correlated, including M in the linear model of Y ~ M leads to a decrease in the effect sizes of X. 
+
+
+---
+
+## Simulations: multicollinearity and change from tau to tau.prime
+
+In the multiple predictor approach, the regression coefficient of X is equivalent to regressing the **residuals of X fitted on M** onto the **residuals of Y fitted on M**.
+
+In the regressing out approach, the regression coefficient of X is equivalent to regressing the X onto the **residuals of Y fitted on M**.
+
+
+```{r}
+n <- 10
+mu_y <- c(-1,1)
+xx <- rep(c(1,2), each = n)
+cor.list <- seq(-5, 5, .1)
+yy <- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm.list <- lapply(1:length(cor.list), function(i) xx*cor.list[[i]] + rnorm(2*n))
+
+res <- do.call(rbind, lapply(1:length(cor.list), function(i) {
+  fit <- lm(yy~factor(xx))
+  fit.joint <- lm(yy~factor(xx)+mm.list[[i]])
+  y.resid <- residuals(lm(yy~mm.list[[i]]))
+  fit.reg <- lm(y.resid~factor(xx))
+  
+  data.frame(d.joint=coef(summary(fit))[2,1]-coef(summary(fit.joint))[2,1],
+             d.reg=coef(summary(fit))[2,1]-coef(summary(fit.reg))[2,1])
+}))
+```
+
+```{r, fig.width=8, fig.height=8}
+corrs <- sapply(1:length(cor.list), function(i) cor(mm.list[[i]], xx))
+
+par(mfrow=c(2,2))
+plot(corrs, res$d.joint,
+     xlab = "Correlation between X and M",
+     ylab = "tau-tau.prime")
+points(corrs, res$d.reg, col = "red")
+legend("top", legend =c("joint model", "regressing out approach"), 
+       col = c(1,2), pch =1, cex=.3)
+
+mm.diff <- sapply(1:length(mm.list), function(i) coef(lm(mm.list[[i]]~factor(xx)))[2])
+plot(mm.diff, res$d.joint,
+     xlab = "Condition differences in M",
+     ylab = "tau-tau.prime")
+points(mm.diff, res$d.reg, col = "red")
+legend("top", legend =c("joint model", "regressing out approach"), 
+       col = c(1,2), pch =1, cex=.3)
+
+plot(mm.diff, corrs,
+     xlab = "Condition differences in M",
+     ylab = "Correlation between X and M")
+```
+
+```{r, fig.width=4, fig.height=4}
+par(mfrow=c(1,1))
+plot(corrs, res$d.joint, ylim=range(c(res$d.joint, res$d.reg)),
+     xlab = "Correlation between X and M",
+     ylab = "tau-tau.prime")
+points(corrs, res$d.reg, col = "red")
+legend("top", legend =c("joint model", "regressing out approach"), 
+       col = c(1,2), pch =1, cex=.7)
+```
+
+Conclusion: 
+
+1. In the regressing out approach, the coefficient of X decreases always. However, the partial regressing coefficient of X in the joint modeling approach increases always. The two approaches give similar results when there's little correlation between X and M. The two regressing coefficients model different effects. In the regressing out approach, the coefficient corresponds to the effect of species on expression after removing variation due to methylation, while the coefficient in the joint modeling approach corresponds to the effect of species on expression after removing variation due to methylation and at a fix level of methylation. So in the regressing out approach, we are not accounting for species differences in methylation, while the joint modelling approach estimate expression differences given no species differences in methylation. 
+
+2. It is conceivable why there's fewer differences in tau-tau.prime in the permutated data. Fewer genes now have significant correlation between X and M, which then translates into small chnages in tau.prime. The results that there are more significant tau-tau.prime in the permutated data can be interpretated as: after removing species differences in methylation, there are way more significant effects in expression; in other words, species differences in expression were previously suppressed by differences in methylation. 
+
+
+---
+
+## Simulations: correlation between Y and M and change from tau to tau.prime
+
+In the multiple predictor approach, the regression coefficient of X is equivalent to regressing the **residuals of X fitted on M** onto the **residuals of Y fitted on M**.
+
+In the regressing out approach, the regression coefficient of X is equivalent to regressing the X onto the **residuals of Y fitted on M**.
+
+
+```{r}
+n <- 10
+mu_y <- c(-1,1)
+xx <- rep(c(1,2), each = n)
+cor.list <- seq(-5, 5, .1)
+yy <- c(rnorm(n, mu_y[1], sd = 1), rnorm(n, mu_y[2], sd = 1))
+mm.list <- lapply(1:length(cor.list), function(i) yy*cor.list[[i]] + rnorm(2*n))
+
+res <- do.call(rbind, lapply(1:length(cor.list), function(i) {
+  fit <- lm(yy~factor(xx))
+  fit.joint <- lm(yy~factor(xx)+mm.list[[i]])
+  y.resid <- residuals(lm(yy~mm.list[[i]]))
+  fit.reg <- lm(y.resid~factor(xx))
+  
+  data.frame(d.joint=coef(summary(fit))[2,1]-coef(summary(fit.joint))[2,1],
+             d.reg=coef(summary(fit))[2,1]-coef(summary(fit.reg))[2,1])
+}))
+```
+
+```{r, fig.width=8, fig.height=8}
+corrs <- sapply(1:length(cor.list), function(i) cor(mm.list[[i]], xx))
+
+par(mfrow=c(2,2))
+plot(corrs, res$d.joint,
+     xlab = "Correlation between Y and M",
+     ylab = "tau-tau.prime")
+points(corrs, res$d.reg, col = "red")
+legend("top", legend =c("joint model", "regressing out approach"), 
+       col = c(1,2), pch =1, cex=.4)
+
+mm.diff <- sapply(1:length(mm.list), function(i) coef(lm(mm.list[[i]]~factor(xx)))[2])
+plot(mm.diff, res$d.joint,
+     xlab = "Condition differences in M",
+     ylab = "tau-tau.prime")
+points(mm.diff, res$d.reg, col = "red")
+legend("top", legend =c("joint model", "regressing out approach"), 
+       col = c(1,2), pch =1, cex=.4)
+
+plot(mm.diff, corrs,
+     xlab = "Condition differences in M",
+     ylab = "Correlation between X and M")
+
+```
+
+
+
+
+
+---
+
+## Heart vs. Kidney data
+
+Take from Lauren's data comparing kidney versus heart tissue samples.
+
+```{r}
+df <- get(load("../data/example-kidney-v-heart-human.rda"))
+Y=df$exprs_pair
+X=df$tissue
+M=df$methyl_pair
+
+# scale gene expression to mean 0 and standard deviation 1 for each gene
+Y <- t(scale(t(Y)))
+M <- t(scale(t(M)))
+
+# apply limma to scaled expression to select DE genes
+design_1 <- model.matrix(~X)
+Y_counts <- 2^Y
+Y_voom <- voom(Y_counts, design=design_1, normalize.method = "none")
+model_1 <- lmFit(Y_voom, design_1)
+model_1 <- eBayes(model_1)
+
+# qvaule package for FDR control
+qval <- qvalue(model_1$p.value[,2])
+
+# select DE genes with q-value  < .05
+ii.de <- which(qval$qvalues < .05)
+Y.de <- Y[ii.de, ]
+M.de <- M[ii.de, ]
+
+# fitting mediation test
+fit.voom <- mediate.test.voom(Y=Y.de, X=X, M=M.de)
+
+
+# create a permutated dataset
+M.permute <- do.call(rbind, lapply(1:nrow(M.de), function(g) {
+  m.perm <- sample(M.de[g,])
+  return(m.perm)
+  }))
+
+fit.voom.perm <- mediate.test.voom(Y=Y.de, X=X, M=M.permute)
+nsam <- ncol(Y.de)
+
+
+# fit ash and get s-values
+nsam <- ncol(Y.de)
+fit.ash <- ash(fit.voom$d,
+               fit.voom$se.fs, df=nsam-2,
+               mixcompdist = "uniform",
+               method = "fdr")
+
+fit.ash.perm <- ash(fit.voom.perm$d, fit.voom.perm$se.fs, 
+                     df=nsam-2,
+                     mixcompdist = "uniform",
+                     method = "fdr")
+```
+
+```{r}
+mean(fit.ash$result$svalue<.01)
+mean(fit.ash.perm$result$svalue<.01)
+```
+
+For most of the genes, s-value becomes smaller. 
+
+```{r}
+plot(fit.ash$result$svalue,
+     fit.ash.perm$result$svalue)
+abline(0,1, col = "blue")
+
+# genes turned signficant in permuted data and not in the original data
+ii <- which(fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01)
+length(ii)
+
+# after permutation, there are more small effect sizes
+ind <- fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01
+par(mfrow=c(2,2))
+plot(fit.ash$result$betahat, fit.ash.perm$result$betahat,
+     col = as.numeric(ind) + 1)
+plot(fit.ash$result$PosteriorMean, fit.ash.perm$result$PosteriorMean,
+     col = as.numeric(ind) + 1)
+plot(fit.ash$result$betahat, fit.ash$result$PosteriorMean,
+     col = as.numeric(ind) + 1)
+plot(fit.ash.perm$result$betahat, fit.ash.perm$result$PosteriorMean,
+     col = as.numeric(ind) + 1)
+
+par(mfrow=c(1,2))
+plot(fit.ash$result$betahat,
+     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
+     col = as.numeric(fit.ash.perm$result$svalue < .01)+1)
+plot(fit.ash.perm$result$betahat,
+     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
+     col = as.numeric(fit.ash.perm$result$svalue < .01)+1)
+title("permuted s-value < .01", outer = TRUE, line = -1)
+
+par(mfrow=c(1,2))
+plot(fit.ash$result$betahat,
+     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
+     col = as.numeric(fit.ash$result$svalue < .01)+1)
+plot(fit.ash.perm$result$betahat,
+     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
+     col = as.numeric(fit.ash$result$svalue < .01)+1)
+title("permuted s-value < .01", outer = TRUE, line = -1)
+```
+
+why se smaller in permuted data!! consider the composition of the standard error...
+
+1. Why sigma tau_prime smaller in the permuted data?
+
+```{r}
+par(mfrow=c(1,2))
+ind <- fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01
+plot(fit.voom$sigma_tau_prime,
+     fit.voom.perm$sigma_tau_prime,
+       col = as.numeric(ind) + 1)
+
+ind2 <- fit.ash.perm$result$svalue > .01 & fit.ash$result$svalue < .01
+plot(fit.voom$sigma_tau_prime,
+     fit.voom.perm$sigma_tau_prime,
+       col = as.numeric(ind2) + 1)
+```
+
+How about the correlation between X and M? Seems that after permutation, some genes go from no correlation between X and M (i.e., no methylation difference) to significant correlation between these two, which consequently results in smaller standard error for tau-tau_prime. 
+
+```{r}
+par(mfrow=c(1,2))
+ind <- fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01
+plot(fit.voom$sigma_tau_prime,
+     fit.voom$corr.xm,
+       col = as.numeric(ind) + 1)
+
+ind <- fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01
+plot(fit.voom.perm$sigma_tau_prime,
+     fit.voom.perm$corr.xm,
+       col = as.numeric(ind) + 1)
+```
+
+Correlation and svalue.
+
+```{r}
+par(mfrow=c(1,2))
+plot(fit.voom$corr.xm,
+     fit.ash$result$svalue)
+plot(fit.voom.perm$corr.xm,
+     fit.ash.perm$result$svalue)
+```
+
+Additional analysis: conditioned on species differences in methylation. Only 5% DE genes have significant species differences in methylation. 
+
+```{r}
+fit.M <- lmFit(M.de, design=model.matrix(~X))
+fit.M <- eBayes(fit.M)
+
+fit.M.sval <- ash(fit.M$coefficients[,2],
+                  fit.M$stdev.unscaled[,2]*fit.M$sigma,
+                  df = length(X)-2)
+
+mean(fit.M.sval$result$svalue < .01)
+```
+
+
+## Conclusions
+
+1. The regressing out approach removes variation due to methylation in expession. In the case where there's large species differene in methylation (all assuming DE expression genes here), then species differences in expression will reduce in the corrected model. 
+
+2. Considering the joint modeling approach, when there's no species difference in methylation, including it as a covariate does not change the coefficient of species. If species is correlated with methylation, then there are two possiblities that may occur: 1)  the effect of species on expression increased or enhanced after including methylation as a covariate, 2) the effect of species on experssion reduced after including methylation as a covariate. The former suggests that methylation differences in species actually "suppress" the effect of species on expression, such that by controlling for it, we observe a larger difference. The latter suggets that methylation differences in species actually mediates the effect of species on experssion, such that by including it as a covariate, the effect of species on expression attenuates. 
+
+3. Permutation test: The permutation induces smaller correlations between X and M than the non-permuted data between species and methylatin. Small correlation between X and M translates into small standard error. This is probably why there are so many more significant results in the permuted data. Note that although there are more small effects in the permuted data, but the effect of standard error (order of 1 difference) outweights the small change in effect size. A quick test of Lauren's data showed that the correlation distribution determines the signal of species differences after controlling for methylation. In fact, the result that there are more significant direct effect in the permuted data makes total sesnse, this means that smaller speciees differences between methylation corresponds to stronger species differences in expression.
+
+4. But how to explain differences between species coefficient in the "regressing out" aproach versus that in the single-mediator model?? In the "regressing out" approach, the effect corresponds to the effect of species on expression adjusted for correlation with methylation, regardless of species differences in methylation. In the single-mediator model or aka the joint modeling approach, the effect corresponds to the effect of species on expression after adjusting for correlation with methylation and also the differences between species in methylation. After permutation when there are no methylation differences, the effects are largely unchanged in the "regressing out" approach, so there are fewer signfiicant effect in the permuted data versus in the real data. On the contrary, in the joint modeling approach, the previously signficant differences between species that could be contributed to methylation differences are now associated with much smaller methylation differences, so the effect due to species on expression alone are bigger, and hence the smaller change in the marginal effect of species on expression. In summary, the "regressing out" approach doesn't account for species differences in methylation, it asks what would happen if the variation in expression is not due to methylation at all, and the results tell us that species differences in expression would be greater; in other words, the effect of species on expression is suppressed by correlation (negative?) between methylation and expression. The joint modeling approach, on the other hand, it asks what woudl happen if the variation in expression is not due to methylation, and if there's no species differences in methylation, and the results suggest that without species differences in methylation (increase in null correlation in the permuted data), the effect of species on expression is greater, which also support the hypothesis that species differences in methylation suppress species differences in expression. 
+
+
+
+
+
+
+
+
+
+
+---
+
+## Session information
+
+```{r}
+sessionInfo()
+```
+
+
+
+
