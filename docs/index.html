@@ -214,15 +214,33 @@ div.section {
 
 </div>
 
-
-<p>Share results of applying <code>ash</code> to test mediation effect in the analysis of RNA-seq data.</p>
+<div id="TOC">
 <ul>
-<li><p><a href="sobeltest.html">Sobel’s test for mediation</a></p></li>
-<li>Regressing out methylation levels
-<ul>
-<li><a href="docs/covariateTest.pdf">Derivations</a></li>
-</ul></li>
+<li><a href="#compare-the-effect-of-condition-x-on-response-y-after-accounting-for-a-third-variable-m">Compare the effect of condition X on response Y after accounting for a third variable M</a></li>
 </ul>
+</div>
+
+<p>Share results of analyzing mediation effects at the gene-level for sequencing data.</p>
+<p>Notations:</p>
+<p>X: independent variable<br />
+Y: response variable<br />
+M: mediating or intervening variable</p>
+<div id="compare-the-effect-of-condition-x-on-response-y-after-accounting-for-a-third-variable-m" class="section level2">
+<h2>Compare the effect of condition X on response Y after accounting for a third variable M</h2>
+<ol style="list-style-type: decimal">
+<li><p>I first apply a “regressing out” approach and derive mean and covariate estimates for the effect size of the differences between the effect of X on Y and the effect of X on Y after regressing M out of Y. <a href="docs/covariateTest.pdf">Download PDF</a></p></li>
+<li>I consider the problem in the context of classic single-mediator analysis and compare the results between this and the “regressing out” approach.
+<ul>
+<li>Both approaches were applied to an <a href="sobeltest.html">experimental dataset</a>, and the results of <a href="illustrate-cases.html">top genes are compared and discussed</a>.</li>
+<li>I learned that in single-mediator analysis, when generalized least square is used, the product of alpha and beta does not equal to tau.prime.</li>
+</ul></li>
+<li>I did some simuation studies to aid my understanding of the problem.
+<ul>
+<li>I consider scenarios under <a href="sobel-simulatino.html">condition differences in Y and M</a>. This turns out not an intuitive way of looking at the problem.</li>
+<li>I simulate cases of signficant DE genes (effect of X on Y) with <a href="simulate-cases.html">varying levels of correlation between X and M</a>.</li>
+</ul></li>
+</ol>
+</div>
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
 TeX fonts only; see
