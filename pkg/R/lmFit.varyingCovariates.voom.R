@@ -5,7 +5,7 @@
 #' @param M data for the mediating variable, a gene by sample matrix (G by N).
 #'
 #' @export
-lm.varyingCovariates.voom <- function(Y, X, M, weights) {
+lm.varyingCovariates.voom <- function(Y, X, M, weights=NULL) {
 
   require(assertthat)
   assert_that(all.equal(dim(Y), dim(M)))
@@ -29,19 +29,14 @@ lm.varyingCovariates.voom <- function(Y, X, M, weights) {
     # adapted from limma::voom
     fits <- lm.varyingCovariates(Y=Y, X=X, M=M)
 
-    Ameans <- fits$coefs[,1]
     sigma <- fits$sigma
-    lib.size <- colSums(2^Y)
-    sx <- Ameans + mean(log2(lib.size + 1)) - log2(1e+06)
+    sx <- rowMeans(Y)
     sy <- sqrt(sigma)
-    l <- lowess(sx, sy, f = .5)
+    l <- lowess(sx, sy, f = .3+.7*(10/G)^.5)
     f <- approxfun(l, rule = 2)
     fitted.values <- fits$predicted
-    fitted.cpm <- 2^fitted.values
-    fitted.count <- 1e-06 * t(t(fitted.cpm) * (lib.size + 1))
-    fitted.logcount <- log2(fitted.count)
-    weights <- 1/f(fitted.logcount)^4
-    dim(weights) <- dim(fitted.logcount)
+    weights <- 1/f(fitted.values)^4
+    dim(weights) <- dim(fitted.values)
   }
 
   # adapted from lm.series
@@ -64,9 +59,13 @@ lm.varyingCovariates.voom <- function(Y, X, M, weights) {
   }
   #dimnames(cov.coef) <- list(coef.names[est], coef.names[est])
 
+  eb <- squeezeVar(sigma^2, df=N-2)
+
   return(list(coefs=beta,
               stdev.unscaled=stdev.unscaled,
-              sigma=sigma))
+              sigma=sigma,
+              s2.post=eb$var.post,
+              df.total=eb$df.prior+(N-2)))
 }
 
 
