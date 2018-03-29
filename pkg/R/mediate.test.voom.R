@@ -50,23 +50,19 @@ mediate.test.voom <- function(Y, X, M) {
   sigma_beta <- model_3$stdev.unscaled[,3]*sqrt(model_3$s2.post)
   sigma_tau <- model_1$stdev.unscaled[,2]*sqrt(model_1$s2.post)
   sigma_tau_prime <- model_3$stdev.unscaled[,2]*sqrt(model_3$s2.post)
-  # sigma_alpha <- model_2$stdev.unscaled[,2]*model_2$sigma
-  # sigma_beta <- model_3$stdev.unscaled[,3]*model_3$sigma
-  # sigma_tau <- model_1$stdev.unscaled[,2]*model_1$sigma
-  # sigma_tau_prime <- model_3$stdev.unscaled[,2]*model_3$sigma
 
-  # corr.xm <- sapply(1:nrow(Y), function(g) {
-  #   biserial.cor(M[g,], as.numeric(X))
-  # })
-  #
+  corr.xm <- sapply(1:nrow(Y), function(g) {
+    biserial.cor(M[g,], as.numeric(X))
+  })
+
   # library(CorShrink)
   # corr.xm.shrink <- CorShrinkVector(corr.xm, rep(ncol(Y),nrow(Y)))
 
   se.sobel <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2)
-  # se.fs <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau_prime*sqrt(1-corr.xm^2))
+  se.fs <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau_prime*sqrt(1-corr.xm^2))
   # se.fs.shrink <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau_prime*sqrt(1-corr.xm.shrink^2))
-  #
-  # se.unbiased <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2 - (sigma_alpha*sigma_beta)^2)
+
+  se.unbiased <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2 - (sigma_alpha*sigma_beta)^2)
  # lik.fun <- function(x, mu, sigma) {
  #  sum(-((x-mu)^2)/(2*sigma^2) - log(sigma) - 0.5*log(2*pi))
  # }
@@ -85,9 +81,9 @@ mediate.test.voom <- function(Y, X, M) {
 
   return(data.frame(d=tau-tau_prime,
               se.sobel=se.sobel,
-              # se.fs=se.fs,
+              se.fs=se.fs,
               # se.fs.shrink=se.fs.shrink,
-#              se.unbiased=se.unbiased,
+              se.unbiased=se.unbiased,
               se.ab.z=sqrt((alpha/sigma_alpha)^2*(beta/sigma_beta)^2+1),
               tau=tau,
               tau_prime=tau_prime,

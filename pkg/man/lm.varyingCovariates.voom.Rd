@@ -4,7 +4,7 @@
 \alias{lm.varyingCovariates.voom}
 \title{linea model for genomewide expression data with gene-specific covariates including voom weights}
 \usage{
-lm.varyingCovariates.voom(Y, X, M, weights)
+lm.varyingCovariates.voom(Y, X, M, weights = NULL)
 }
 \arguments{
 \item{Y}{gene by sample expression matrix (G by N). Required to be normalized and log transformed.}
