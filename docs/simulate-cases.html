@@ -12,7 +12,7 @@
 <meta name="author" content="Joyce Hsiao" />
 
 
-<title>Simulate study of varying correlations between X and M</title>
+<title>Simulate study: varying associations between X and M and between Y and M</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -211,7 +211,7 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">Simulate study of varying correlations between X and M</h1>
+<h1 class="title toc-ignore">Simulate study: varying associations between X and M and between Y and M</h1>
 <h4 class="author"><em>Joyce Hsiao</em></h4>
 
 </div>
@@ -232,23 +232,17 @@ div.section {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<pre><code>Warning in as.POSIXlt.POSIXct(Sys.time()): unknown timezone &#39;zone/tz/2018c.
-1.0/zoneinfo/America/Chicago&#39;</code></pre>
-<p><strong>Last updated:</strong> 2018-03-20</p>
+<p><strong>Last updated:</strong> 2018-03-29</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 9032a51</p>
+<p><strong>Code version:</strong> 782dcad</p>
 <hr />
 <div id="data-and-packages" class="section level2">
 <h2>Data and packages</h2>
-<pre class="r"><code>library(medinome)</code></pre>
-<pre><code>Loading required package: ggplot2</code></pre>
-<pre class="r"><code>library(limma)</code></pre>
-<pre><code>Warning: package &#39;limma&#39; was built under R version 3.4.3</code></pre>
-<pre class="r"><code>library(qvalue)</code></pre>
-<pre><code>Warning: package &#39;qvalue&#39; was built under R version 3.4.2</code></pre>
-<pre class="r"><code>library(ashr)</code></pre>
-<pre><code>Warning: package &#39;ashr&#39; was built under R version 3.4.3</code></pre>
+<pre class="r"><code>library(medinome)
+library(limma)
+library(qvalue)
+library(ashr)</code></pre>
 <hr />
 </div>
 <div id="simulations-change-in-tau.prime" class="section level2">
@@ -449,7 +443,7 @@ legend(&quot;top&quot;, legend =c(&quot;joint model&quot;, &quot;regressing out 
 plot(mm.diff, corrs,
      xlab = &quot;Condition differences in M&quot;,
      ylab = &quot;Correlation between X and M&quot;)</code></pre>
-<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulate-cases.Rmd/fig-corr-ym-simulation-1.png" width="768" style="display: block; margin: auto;" /></p>
 <hr />
 </div>
 <div id="heart-vs.kidney-data" class="section level2">
@@ -505,82 +499,30 @@ fit.ash.perm &lt;- ash(fit.voom.perm$d, fit.voom.perm$se.fs,
                      mixcompdist = &quot;uniform&quot;,
                      method = &quot;fdr&quot;)</code></pre>
 <pre class="r"><code>mean(fit.ash$result$svalue&lt;.01)</code></pre>
-<pre><code>[1] 0.4040805</code></pre>
+<pre><code>[1] 0</code></pre>
 <pre class="r"><code>mean(fit.ash.perm$result$svalue&lt;.01)</code></pre>
-<pre><code>[1] 0.4947577</code></pre>
-<p>For most of the genes, s-value becomes smaller.</p>
+<pre><code>[1] 0</code></pre>
+<p>There are no significant genes for either case. Also, the standard errors became smaller in the permuted data…</p>
 <pre class="r"><code>plot(fit.ash$result$svalue,
-     fit.ash.perm$result$svalue)
-abline(0,1, col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code># genes turned signficant in permuted data and not in the original data
-ii &lt;- which(fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01)
-length(ii)</code></pre>
-<pre><code>[1] 807</code></pre>
-<pre class="r"><code># after permutation, there are more small effect sizes
-ind &lt;- fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01
-par(mfrow=c(2,2))
-plot(fit.ash$result$betahat, fit.ash.perm$result$betahat,
-     col = as.numeric(ind) + 1)
-plot(fit.ash$result$PosteriorMean, fit.ash.perm$result$PosteriorMean,
-     col = as.numeric(ind) + 1)
-plot(fit.ash$result$betahat, fit.ash$result$PosteriorMean,
-     col = as.numeric(ind) + 1)
-plot(fit.ash.perm$result$betahat, fit.ash.perm$result$PosteriorMean,
-     col = as.numeric(ind) + 1)</code></pre>
-<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-12-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>par(mfrow=c(1,2))
-plot(fit.ash$result$betahat,
-     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
-     col = as.numeric(fit.ash.perm$result$svalue &lt; .01)+1)
-plot(fit.ash.perm$result$betahat,
-     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
-     col = as.numeric(fit.ash.perm$result$svalue &lt; .01)+1)
-title(&quot;permuted s-value &lt; .01&quot;, outer = TRUE, line = -1)</code></pre>
-<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-12-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>par(mfrow=c(1,2))
-plot(fit.ash$result$betahat,
-     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
-     col = as.numeric(fit.ash$result$svalue &lt; .01)+1)
-plot(fit.ash.perm$result$betahat,
-     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
-     col = as.numeric(fit.ash$result$svalue &lt; .01)+1)
-title(&quot;permuted s-value &lt; .01&quot;, outer = TRUE, line = -1)</code></pre>
-<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-12-4.png" width="672" style="display: block; margin: auto;" /></p>
-<p>why se smaller in permuted data!! consider the composition of the standard error…</p>
-<ol style="list-style-type: decimal">
-<li>Why sigma tau_prime smaller in the permuted data?</li>
-</ol>
-<pre class="r"><code>par(mfrow=c(1,2))
-ind &lt;- fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01
-plot(fit.voom$sigma_tau_prime,
-     fit.voom.perm$sigma_tau_prime,
-       col = as.numeric(ind) + 1)
-
-ind2 &lt;- fit.ash.perm$result$svalue &gt; .01 &amp; fit.ash$result$svalue &lt; .01
-plot(fit.voom$sigma_tau_prime,
-     fit.voom.perm$sigma_tau_prime,
-       col = as.numeric(ind2) + 1)</code></pre>
-<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>How about the correlation between X and M? Seems that after permutation, some genes go from no correlation between X and M (i.e., no methylation difference) to significant correlation between these two, which consequently results in smaller standard error for tau-tau_prime.</p>
-<pre class="r"><code>par(mfrow=c(1,2))
-ind &lt;- fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01
-plot(fit.voom$sigma_tau_prime,
-     fit.voom$corr.xm,
-       col = as.numeric(ind) + 1)
-
-ind &lt;- fit.ash.perm$result$svalue &lt; .01 &amp; fit.ash$result$svalue &gt; .01
-plot(fit.voom.perm$sigma_tau_prime,
-     fit.voom.perm$corr.xm,
-       col = as.numeric(ind) + 1)</code></pre>
-<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>Correlation and svalue.</p>
-<pre class="r"><code>par(mfrow=c(1,2))
-plot(fit.voom$corr.xm,
-     fit.ash$result$svalue)
-plot(fit.voom.perm$corr.xm,
      fit.ash.perm$result$svalue)</code></pre>
-<p><img src="figure/simulate-cases.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulate-cases.Rmd/realdata-plot-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>par(mfrow=c(1,2))
+plot(fit.ash$result$betahat,
+     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5))
+plot(fit.ash.perm$result$betahat,
+     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5))</code></pre>
+<p><img src="figure/simulate-cases.Rmd/realdata-plot-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>How about the correlation between X and M? Seems that after permutation, some genes go from no correlation between X and M (i.e., no methylation difference) to significant correlation between these two, which consequently results in smaller standard error for tau-tau_prime.</p>
+<pre class="r"><code>par(mfrow=c(2,2))
+plot(y=fit.ash$result$sebetahat,
+     x=fit.voom$corr.xm)
+
+plot(y=fit.ash.perm$result$sebetahat,
+     x=fit.voom.perm$corr.xm)
+
+hist(fit.voom$corr.xm, nclass=50)
+hist(fit.voom.perm$corr.xm, nclass=50)</code></pre>
+<p><img src="figure/simulate-cases.Rmd/realdata-plot3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Additional analysis: conditioned on species differences in methylation. Only 5% DE genes have significant species differences in methylation.</p>
 <pre class="r"><code>fit.M &lt;- lmFit(M.de, design=model.matrix(~X))
 fit.M &lt;- eBayes(fit.M)
@@ -620,8 +562,9 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] assertthat_0.2.0 ashr_2.2-7       qvalue_2.10.0    limma_3.34.9    
-[5] medinome_0.0.1   ggplot2_2.2.1   
+ [1] ltm_1.1-0        polycor_0.7-9    msm_1.6.6        MASS_7.3-49     
+ [5] assertthat_0.2.0 ashr_2.2-7       qvalue_2.10.0    limma_3.34.9    
+ [9] medinome_0.0.1   ggplot2_2.2.1   
 
 loaded via a namespace (and not attached):
  [1] Rcpp_0.12.15      pillar_1.2.1      compiler_3.4.1   
@@ -630,14 +573,15 @@ loaded via a namespace (and not attached):
 [10] evaluate_0.10.1   tibble_1.4.2      gtable_0.2.0     
 [13] lattice_0.20-35   rlang_0.2.0       Matrix_1.2-12    
 [16] foreach_1.4.4     yaml_2.1.18       parallel_3.4.1   
-[19] stringr_1.3.0     knitr_1.20        REBayes_1.3      
-[22] rprojroot_1.3-2   grid_3.4.1        rmarkdown_1.9    
-[25] reshape2_1.4.3    magrittr_1.5      backports_1.1.2  
-[28] scales_0.5.0      codetools_0.2-15  htmltools_0.3.6  
-[31] splines_3.4.1     MASS_7.3-49       colorspace_1.3-2 
-[34] stringi_1.1.6     Rmosek_8.0.69     lazyeval_0.2.1   
-[37] munsell_0.4.3     doParallel_1.0.11 pscl_1.5.2       
-[40] truncnorm_1.0-8   SQUAREM_2017.10-1</code></pre>
+[19] expm_0.999-2      mvtnorm_1.0-7     stringr_1.3.0    
+[22] knitr_1.20        REBayes_1.3       rprojroot_1.3-2  
+[25] grid_3.4.1        survival_2.41-3   rmarkdown_1.9    
+[28] reshape2_1.4.3    magrittr_1.5      backports_1.1.2  
+[31] scales_0.5.0      codetools_0.2-15  htmltools_0.3.6  
+[34] splines_3.4.1     colorspace_1.3-2  stringi_1.1.6    
+[37] Rmosek_8.0.69     lazyeval_0.2.1    munsell_0.4.3    
+[40] doParallel_1.0.11 pscl_1.5.2        truncnorm_1.0-8  
+[43] SQUAREM_2017.10-1</code></pre>
 </div>
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
