@@ -1,5 +1,5 @@
 ---
-title: "Simulate study of varying correlations between X and M"
+title: "Simulate study: varying associations between X and M and between Y and M"
 author: "Joyce Hsiao"
 output: 
   html_document:
@@ -201,7 +201,7 @@ In the multiple predictor approach, the regression coefficient of X is equivalen
 In the regressing out approach, the regression coefficient of X is equivalent to regressing the X onto the **residuals of Y fitted on M**.
 
 
-```{r}
+```{r corr-ym-simulation}
 n <- 10
 mu_y <- c(-1,1)
 xx <- rep(c(1,2), each = n)
@@ -220,7 +220,7 @@ res <- do.call(rbind, lapply(1:length(cor.list), function(i) {
 }))
 ```
 
-```{r, fig.width=8, fig.height=8}
+```{r fig-corr-ym-simulation, fig.width=8, fig.height=8}
 corrs <- sapply(1:length(cor.list), function(i) cor(mm.list[[i]], xx))
 
 par(mfrow=c(2,2))
@@ -248,14 +248,13 @@ plot(mm.diff, corrs,
 
 
 
-
 ---
 
 ## Heart vs. Kidney data
 
 Take from Lauren's data comparing kidney versus heart tissue samples.
 
-```{r}
+```{r realdata}
 df <- get(load("../data/example-kidney-v-heart-human.rda"))
 Y=df$exprs_pair
 X=df$tissue
@@ -307,93 +306,37 @@ fit.ash.perm <- ash(fit.voom.perm$d, fit.voom.perm$se.fs,
                      method = "fdr")
 ```
 
-```{r}
+```{r realdata-sval}
 mean(fit.ash$result$svalue<.01)
 mean(fit.ash.perm$result$svalue<.01)
 ```
 
-For most of the genes, s-value becomes smaller. 
+There are no significant genes for either case. Also, the standard errors became smaller in the permuted data...
 
-```{r}
+```{r realdata-plot}
 plot(fit.ash$result$svalue,
      fit.ash.perm$result$svalue)
-abline(0,1, col = "blue")
-
-# genes turned signficant in permuted data and not in the original data
-ii <- which(fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01)
-length(ii)
-
-# after permutation, there are more small effect sizes
-ind <- fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01
-par(mfrow=c(2,2))
-plot(fit.ash$result$betahat, fit.ash.perm$result$betahat,
-     col = as.numeric(ind) + 1)
-plot(fit.ash$result$PosteriorMean, fit.ash.perm$result$PosteriorMean,
-     col = as.numeric(ind) + 1)
-plot(fit.ash$result$betahat, fit.ash$result$PosteriorMean,
-     col = as.numeric(ind) + 1)
-plot(fit.ash.perm$result$betahat, fit.ash.perm$result$PosteriorMean,
-     col = as.numeric(ind) + 1)
 
 par(mfrow=c(1,2))
 plot(fit.ash$result$betahat,
-     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
-     col = as.numeric(fit.ash.perm$result$svalue < .01)+1)
+     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5))
 plot(fit.ash.perm$result$betahat,
-     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
-     col = as.numeric(fit.ash.perm$result$svalue < .01)+1)
-title("permuted s-value < .01", outer = TRUE, line = -1)
-
-par(mfrow=c(1,2))
-plot(fit.ash$result$betahat,
-     fit.ash$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
-     col = as.numeric(fit.ash$result$svalue < .01)+1)
-plot(fit.ash.perm$result$betahat,
-     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5),
-     col = as.numeric(fit.ash$result$svalue < .01)+1)
-title("permuted s-value < .01", outer = TRUE, line = -1)
-```
-
-why se smaller in permuted data!! consider the composition of the standard error...
-
-1. Why sigma tau_prime smaller in the permuted data?
-
-```{r}
-par(mfrow=c(1,2))
-ind <- fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01
-plot(fit.voom$sigma_tau_prime,
-     fit.voom.perm$sigma_tau_prime,
-       col = as.numeric(ind) + 1)
-
-ind2 <- fit.ash.perm$result$svalue > .01 & fit.ash$result$svalue < .01
-plot(fit.voom$sigma_tau_prime,
-     fit.voom.perm$sigma_tau_prime,
-       col = as.numeric(ind2) + 1)
+     fit.ash.perm$result$sebetahat, ylim=c(0,4), xlim=c(-5,5))
 ```
 
 How about the correlation between X and M? Seems that after permutation, some genes go from no correlation between X and M (i.e., no methylation difference) to significant correlation between these two, which consequently results in smaller standard error for tau-tau_prime. 
 
-```{r}
-par(mfrow=c(1,2))
-ind <- fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01
-plot(fit.voom$sigma_tau_prime,
-     fit.voom$corr.xm,
-       col = as.numeric(ind) + 1)
+```{r realdata-plot3}
+par(mfrow=c(2,2))
+plot(y=fit.ash$result$sebetahat,
+     x=fit.voom$corr.xm)
 
-ind <- fit.ash.perm$result$svalue < .01 & fit.ash$result$svalue > .01
-plot(fit.voom.perm$sigma_tau_prime,
-     fit.voom.perm$corr.xm,
-       col = as.numeric(ind) + 1)
-```
+plot(y=fit.ash.perm$result$sebetahat,
+     x=fit.voom.perm$corr.xm)
 
-Correlation and svalue.
+hist(fit.voom$corr.xm, nclass=50)
+hist(fit.voom.perm$corr.xm, nclass=50)
 
-```{r}
-par(mfrow=c(1,2))
-plot(fit.voom$corr.xm,
-     fit.ash$result$svalue)
-plot(fit.voom.perm$corr.xm,
-     fit.ash.perm$result$svalue)
 ```
 
 Additional analysis: conditioned on species differences in methylation. Only 5% DE genes have significant species differences in methylation. 
