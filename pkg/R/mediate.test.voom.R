@@ -62,7 +62,7 @@ mediate.test.voom <- function(Y, X, M) {
   se.fs <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau_prime*sqrt(1-corr.xm^2))
   # se.fs.shrink <- sqrt(sigma_tau^2 + sigma_tau_prime^2 - 2*sigma_tau*sigma_tau_prime*sqrt(1-corr.xm.shrink^2))
 
-  se.unbiased <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2 - (sigma_alpha*sigma_beta)^2)
+  # se.unbiased <- sqrt((alpha*sigma_beta)^2 + (beta*sigma_alpha)^2 - (sigma_alpha*sigma_beta)^2)
  # lik.fun <- function(x, mu, sigma) {
  #  sum(-((x-mu)^2)/(2*sigma^2) - log(sigma) - 0.5*log(2*pi))
  # }
@@ -83,7 +83,7 @@ mediate.test.voom <- function(Y, X, M) {
               se.sobel=se.sobel,
               se.fs=se.fs,
               # se.fs.shrink=se.fs.shrink,
-              se.unbiased=se.unbiased,
+#              se.unbiased=se.unbiased,
               se.ab.z=sqrt((alpha/sigma_alpha)^2*(beta/sigma_beta)^2+1),
               tau=tau,
               tau_prime=tau_prime,
@@ -94,8 +94,8 @@ mediate.test.voom <- function(Y, X, M) {
               sigma_alpha=sigma_alpha,
               sigma_beta=sigma_beta,
               sigma_tau = sigma_tau,
-              sigma_tau_prime=sigma_tau_prime))
-              # corr.xm=corr.xm,
+              sigma_tau_prime=sigma_tau_prime,
+              corr.xm=corr.xm))
               # corr.xm.shrink=corr.xm.shrink,
               #lrt.pval=lrt.pval,
               # cor.tau.tau_prime=cor.tau.tau_prime,
