@@ -1,0 +1,177 @@
+---
+title: "Compute Bayesian credible interval for mediating effect"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: FALSE
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+
+---
+
+## Data and packages
+
+```{r}
+library(medinome)
+library(limma)
+library(qvalue)
+library(MCMCpack)
+```
+
+---
+
+## Heart vs. Kidney data
+
+Take from Lauren's data comparing kidney versus heart tissue samples.
+
+```{r realdata}
+df <- get(load("../data/example-kidney-v-heart-human.rda"))
+Y=df$exprs_pair
+X=df$tissue
+M=df$methyl_pair
+
+# scale gene expression to mean 0 and standard deviation 1 for each gene
+Y <- t(scale(t(Y)))
+M <- t(scale(t(M)))
+
+# apply limma to scaled expression to select DE genes
+design_1 <- model.matrix(~X)
+Y_counts <- 2^Y
+Y_voom <- voom(Y_counts, design=design_1, normalize.method = "none")
+model_1 <- lmFit(Y_voom, design_1)
+model_1 <- eBayes(model_1)
+
+# qvaule package for FDR control
+qval <- qvalue(model_1$p.value[,2])
+
+# select DE genes with q-value  < .05
+ii.de <- which(qval$qvalues < .05)
+Y.de <- Y[ii.de, ]
+M.de <- M[ii.de, ]
+
+# create a permutated dataset
+M.permute <- do.call(rbind, lapply(1:nrow(M.de), function(g) {
+  m.perm <- sample(M.de[g,])
+  return(m.perm)
+  }))
+
+# fitting mediation test
+fit.voom <- mediate.test.voom(Y=Y.de, X=X, M=M.de)
+
+fit.voom.perm <- mediate.test.voom(Y=Y.de, X=X, M=M.permute)
+```
+
+Function to compute Bayesian credible interval.
+
+```{r}
+ci <- vector("list", nrow(Y.de))
+type_1 <- 0.05
+prior_mn_model_3 <- rep(0,3)
+prior_mn_model_2 <- rep(0,2)
+
+for (g in 1:nrow(Y.de)) {
+
+  prior_sd_model_2 <- c(fit.voom$sigma_gamma2[g], fit.voom$sigma_alpha[g])
+  prior_sd_model_3 <- c(fit.voom$sigma_gamma3[g], fit.voom$sigma_tau_prime[g],
+                        fit.voom$sigma_beta[g])
+  
+  M_g <- M.de[g,]
+  Y_g <- Y.de[g,]
+
+  model_2 <- MCMCregress(M_g ~ X, burnin = 1000 , mcmc = 1000, 
+              seed = 7, b0= prior_mn_model_2, B0 = prior_sd_model_2^(-1))
+              # sigma.mu = fit.voom$sigma_model2[g]^2,
+              # sigma.var = var(fit.voom$sigma_model2^2))
+  
+  model_3 <- MCMCregress(Y_g ~ X + M_g, burnin = 1000 , mcmc = 1000, 
+              seed = 7, b0= prior_mn_model_3, B0 = prior_sd_model_3^(-1))
+              # sigma.mu = fit.voom$sigma_model3[g]^2,
+              # sigma.var = var(fit.voom$sigma_model3^2))
+
+  ab <- model_2[,2]*model_3[,3]
+
+  ci.lower <- quantile(ab,probs=type_1/2,type=4)
+  ci.higher <- quantile(ab,probs=(1-type_1/2),type=4)
+
+  ci[[g]] <- data.frame(ci.lower, ci.higher)
+}
+ci <- do.call(rbind, ci)
+
+res <- sapply(1:g, function(g) {fit.voom$ab[g] < ci[g,1] | fit.voom$ab[g] > ci[g,2]})
+mean(res)
+sum(res)
+
+
+ci.perm <- vector("list", nrow(Y.de))
+type_1 <- 0.05
+prior_mn_model_3 <- rep(0,3)
+prior_mn_model_2 <- rep(0,2)
+
+for (g in 1:nrow(Y.de)) {
+
+  prior_sd_model_2 <- c(fit.voom.perm$sigma_gamma2[g], fit.voom.perm$sigma_alpha[g])
+  prior_sd_model_3 <- c(fit.voom.perm$sigma_gamma3[g], 
+                        fit.voom.perm$sigma_tau_prime[g],
+                        fit.voom.perm$sigma_beta[g])
+  
+  M_g <- M.permute[g,]
+  Y_g <- Y.de[g,]
+
+  model_2 <- MCMCregress(M_g ~ X, burnin = 1000 , mcmc = 1000, 
+              seed = 7, b0= prior_mn_model_2, B0 = prior_sd_model_2^(-1))
+              # sigma.mu = fit.voom.perm$sigma_model2^2,
+              # sigma.var = var(fit.voom.perm$sigma_model2^2))
+  
+  model_3 <- MCMCregress(Y_g ~ X + M_g, burnin = 1000 , mcmc = 1000, 
+              seed = 7, b0= prior_mn_model_3, B0 = prior_sd_model_3^(-1))
+              # sigma.mu = fit.voom.perm$sigma_model3^2,
+              # sigma.var = var(fit.voom.perm$sigma_model3^2))
+
+  ab <- model_2[,2]*model_3[,3]
+
+  ci.lower <- quantile(ab,probs=type_1/2,type=4)
+  ci.higher <- quantile(ab,probs=(1-type_1/2),type=4)
+
+  ci.perm[[g]] <- data.frame(ci.lower, ci.higher)
+}
+ci.perm <- do.call(rbind, ci.perm)
+
+res.perm <- sapply(1:g, function(g) {fit.voom.perm$ab[g] < ci.perm[g,1] | fit.voom.perm$ab[g] > ci.perm[g,2]})
+mean(res.perm)
+```
+
+
+## Conclusions
+
+* Preliminary results show that only 3 percent of the genes, there's significant effect of mediation. Using permuted methylation data, we found significant effect in only 1 percent of the genes. Though this trend is consistent with the expectation, I have little confidence in this approach given the low percentage of genes found signficant in the test of mediation coupled with the potentiality for confounding between the relations between methylation and expression.
+
+---
+
+## Session information
+
+```{r}
+sessionInfo()
+```
+
+
+
+
