@@ -8,7 +8,10 @@ output:
 
 ---
 
-Share results of analyzing mediation effects at the gene-level for sequencing data.
+Share results of analyzing causal effects at the gene-level for sequencing data.
+
+
+## Single-mediator analysis
 
 Notations: 
 
@@ -16,17 +19,16 @@ X: independent variable
 Y: response variable  
 M: mediating or intervening variable  
 
-
-## Effect of X on Y after accounting for M
-
 1. I first apply a "regressing out" approach and derive mean and covariate estimates for the effect size of the differences between the effect of X on Y and the effect of X on Y after regressing M out of Y. [Download PDF](docs/covariateTest.pdf)
 
-2. I consider the problem in the context of classic single-mediator analysis and compare the results between this and the "regressing out" approach. 
+2. I then consider the problem in the context of classic single-mediator analysis and compare the results between this and the "regressing out" approach. 
     * Both approaches were applied to an [experimental dataset](sobeltest.html), and the results of [top genes are compared and discussed](illustrate-cases.html).
     * I learned that in single-mediator analysis, when generalized least square is used, the product of alpha and beta does not equal to tau.prime.
     
-3. I did some simuation studies to aid my understanding of the problem.
-    * I consider scenarios under [condition differences in Y and M](sobel-simulatino.html). This turns out not an intuitive way of looking at the problem.
-    * I simulate cases of signficant DE genes (effect of X on Y) with [varying levels of correlation between X and M](simulate-cases.html). 
+3. I did some simulation studies to aid my understanding of the problem.
+    * Consider scenarios under [condition differences in Y and M](sobel-simulatino.html). This turns out not an intuitive way of looking at the problem.
+    * Simulate cases of signficant DE genes (effect of X on Y) under scenarios of [varying correlations between X and M and between Y and M](simulate-cases.html). 
+
+4. One major concern in applying the single-mediator analysis lies in the precision of the point estimate for the mediating effect. Existing literature suggest that Sobel's estimate of standard error cannot be applied to sample size smaller than 20 or when the distribution of the data may not follow a normal distribution. One possible solution proposed by Yuan and MacKinnon 2009 computes Bayesian credible interval for the mediating effect. I tried this approach on our [experimental data](bayesian-tissue.html).
 
 
