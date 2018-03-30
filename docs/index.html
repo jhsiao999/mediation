@@ -216,30 +216,31 @@ div.section {
 
 <div id="TOC">
 <ul>
-<li><a href="#effect-of-x-on-y-after-accounting-for-m">Effect of X on Y after accounting for M</a></li>
+<li><a href="#single-mediator-analysis">Single-mediator analysis</a></li>
 </ul>
 </div>
 
 <hr />
-<p>Share results of analyzing mediation effects at the gene-level for sequencing data.</p>
+<p>Share results of analyzing causal effects at the gene-level for sequencing data.</p>
+<div id="single-mediator-analysis" class="section level2">
+<h2>Single-mediator analysis</h2>
 <p>Notations:</p>
 <p>X: independent variable<br />
 Y: response variable<br />
 M: mediating or intervening variable</p>
-<div id="effect-of-x-on-y-after-accounting-for-m" class="section level2">
-<h2>Effect of X on Y after accounting for M</h2>
 <ol style="list-style-type: decimal">
 <li><p>I first apply a “regressing out” approach and derive mean and covariate estimates for the effect size of the differences between the effect of X on Y and the effect of X on Y after regressing M out of Y. <a href="docs/covariateTest.pdf">Download PDF</a></p></li>
-<li>I consider the problem in the context of classic single-mediator analysis and compare the results between this and the “regressing out” approach.
+<li>I then consider the problem in the context of classic single-mediator analysis and compare the results between this and the “regressing out” approach.
 <ul>
 <li>Both approaches were applied to an <a href="sobeltest.html">experimental dataset</a>, and the results of <a href="illustrate-cases.html">top genes are compared and discussed</a>.</li>
 <li>I learned that in single-mediator analysis, when generalized least square is used, the product of alpha and beta does not equal to tau.prime.</li>
 </ul></li>
-<li>I did some simuation studies to aid my understanding of the problem.
+<li>I did some simulation studies to aid my understanding of the problem.
 <ul>
-<li>I consider scenarios under <a href="sobel-simulatino.html">condition differences in Y and M</a>. This turns out not an intuitive way of looking at the problem.</li>
-<li>I simulate cases of signficant DE genes (effect of X on Y) with <a href="simulate-cases.html">varying levels of correlation between X and M</a>.</li>
+<li>Consider scenarios under <a href="sobel-simulatino.html">condition differences in Y and M</a>. This turns out not an intuitive way of looking at the problem.</li>
+<li>Simulate cases of signficant DE genes (effect of X on Y) under scenarios of <a href="simulate-cases.html">varying correlations between X and M and between Y and M</a>.</li>
 </ul></li>
+<li><p>One major concern in applying the single-mediator analysis lies in the precision of the point estimate for the mediating effect. Existing literature suggest that Sobel’s estimate of standard error cannot be applied to sample size smaller than 20 or when the distribution of the data may not follow a normal distribution. One possible solution proposed by Yuan and MacKinnon 2009 computes Bayesian credible interval for the mediating effect. I tried this approach on our <a href="bayesian-tissue.html">experimental data</a>.</p></li>
 </ol>
 </div>
 
