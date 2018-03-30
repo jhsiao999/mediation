@@ -46,6 +46,8 @@ mediate.test.voom <- function(Y, X, M) {
   tau_prime <- model_3$coefs[,2]
   alpha <- coef(model_2)[,2]
   beta <- model_3$coefs[,3]
+  sigma_gamma2 <- model_2$stdev.unscaled[,1]*sqrt(model_2$s2.post)
+  sigma_gamma3 <- model_3$stdev.unscaled[,1]*sqrt(model_3$s2.post)
   sigma_alpha <- model_2$stdev.unscaled[,2]*sqrt(model_2$s2.post)
   sigma_beta <- model_3$stdev.unscaled[,3]*sqrt(model_3$s2.post)
   sigma_tau <- model_1$stdev.unscaled[,2]*sqrt(model_1$s2.post)
@@ -95,7 +97,11 @@ mediate.test.voom <- function(Y, X, M) {
               sigma_beta=sigma_beta,
               sigma_tau = sigma_tau,
               sigma_tau_prime=sigma_tau_prime,
-              corr.xm=corr.xm))
+              corr.xm=corr.xm,
+              sigma_gamma2=sigma_gamma2,
+              sigma_gamma3=sigma_gamma3,
+              sigma_model2=sqrt(model_2$s2.post),
+              sigma_model3=sqrt(model_2$s2.post)))
               # corr.xm.shrink=corr.xm.shrink,
               #lrt.pval=lrt.pval,
               # cor.tau.tau_prime=cor.tau.tau_prime,
