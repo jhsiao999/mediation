@@ -3,8 +3,8 @@
 #' @description Different from the joint modeling approach, the direct effect is estimated using data after regressing the effect of mediating variable out from the dependent variable. In addition, voom transformation is applied to the expression data for estimating the condition effect.
 #'
 #' @param Y gene by sample count matrix (G by N).
-#' @param X sample condition labels, assumed to be binary for now.
-#' @param M data for the mediating variable, a gene by sample matrix (G by N).
+#' @param X vector of length N; sample condition labels, assumed to be binary for now.
+#' @param M data for the mediating variable, gene by sample matrix (G by N).
 #'
 #'
 #' @examples
