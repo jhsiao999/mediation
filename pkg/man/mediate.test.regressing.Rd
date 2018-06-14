@@ -7,7 +7,7 @@
 mediate.test.regressing(Y, X, M)
 }
 \arguments{
-\item{Y}{gene by sample expression matrix (G by N). Required to be normalized and log transformed.}
+\item{Y}{gene by sample count matrix (G by N).}
 
 \item{X}{sample condition labels, assumed to be binary for now.}
 
