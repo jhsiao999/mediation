@@ -2,7 +2,7 @@
 #'
 #' @description Different from the joint modeling approach, the direct effect is estimated using data after regressing the effect of mediating variable out from the dependent variable. In addition, voom transformation is applied to the expression data for estimating the condition effect.
 #'
-#' @param Y gene by sample count matrix (G by N).
+#' @param Y gene by sample matrix (G by N) of log2 normalize gene expression.
 #' @param X vector of length N; sample condition labels, assumed to be binary for now.
 #' @param M data for the mediating variable, gene by sample matrix (G by N).
 #'
@@ -30,26 +30,27 @@ mediate.test.regressing <- function(Y, X, M) {
   assert_that(all.equal(length(X), dim(Y)[2]))
 
   G <- nrow(Y)
+  Y <- as.matrix(Y)
 
   # model 1: Y_g ~ \tau_g X
   # specify tissue coding
   design_1 <- model.matrix(~X)
 
-  Y_voom <- voom(Y, design=design_1, normalize.method = "none")
-  model_1 <- lmFit(Y_voom, design_1)
-  model_1 <- eBayes(model_1)
+  #Y_voom <- voom(Y, design=design_1, normalize.method = "none")
+  model_1 <- lmFit(Y, design_1)
+  #model_1 <- eBayes(model_1)
 
   # model 2: Y_g ~ \kappa_g M_g
   # to regress out the effect of mediating variable from Y
   Y_resid <- array(0, dim = dim(Y))
   for (g in 1:G){
-    Y_resid[g,] <- lm(Y_voom$E[g, ] ~ as.numeric(M[g, ]))$resid
+    Y_resid[g,] <- lm(Y[g, ] ~ as.numeric(M[g, ]))$resid
   }
   rownames(Y_resid) <- rownames(Y)
-  Y_resid_voom <- vooma(Y_resid, design=design_1, plot=FALSE)
+  #Y_resid_voom <- vooma(Y_resid, design=design_1, plot=FALSE)
 
   # model 3: Y_resid_g ~ \tau^{\prime}_g X
-  model_3 <- lmFit(Y_resid_voom, design_1)
+  model_3 <- lmFit(Y_resid, design_1)
 
   # get effect sizes
   beta1 <- coef(model_1[,2])
