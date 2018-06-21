@@ -20,7 +20,7 @@
 #'
 #' @export
 
-mediate.test.regressing <- function(Y, X, M, cov) {
+mediate.test.regressing <- function(Y, X, M, cov=NULL) {
 
   library(limma)
   library(assertthat)
