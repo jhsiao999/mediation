@@ -14,12 +14,13 @@
 #' #Y <- df$exprs_pair
 #' #M <- df$methyl_pair
 #' #X <- df$tissue
+#' #cov <- df$RIN
 #' #fit <- mediate.test.regressing(Y=Y, X=X, M=M)
 #' #ash_reg <- ash(betahat=fit$d, sebetahat=fit$d_se, lik=lik_normal())
 #'
 #' @export
 
-mediate.test.regressing <- function(Y, X, M) {
+mediate.test.regressing <- function(Y, X, M, cov) {
 
   library(limma)
   library(assertthat)
@@ -34,7 +35,12 @@ mediate.test.regressing <- function(Y, X, M) {
 
   # model 1: Y_g ~ \tau_g X
   # specify tissue coding
-  design_1 <- model.matrix(~X)
+  if (!is.null(cov)) {
+    design_1 <- model.matrix(~X+cov)
+  } else {
+    design_1 <- model.matrix(~X)
+  }
+
 
   #Y_voom <- voom(Y, design=design_1, normalize.method = "none")
   model_1 <- lmFit(Y, design_1)
