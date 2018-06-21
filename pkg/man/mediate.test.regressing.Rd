@@ -4,7 +4,7 @@
 \alias{mediate.test.regressing}
 \title{An ad hoc approach for testing mediation effect}
 \usage{
-mediate.test.regressing(Y, X, M, cov)
+mediate.test.regressing(Y, X, M, cov = NULL)
 }
 \arguments{
 \item{Y}{gene by sample matrix (G by N) of log2 normalize gene expression.}
@@ -24,7 +24,12 @@ Different from the joint modeling approach, the direct effect is estimated using
 #M <- df$methyl_pair
 #X <- df$tissue
 #cov <- df$RIN
-#fit <- mediate.test.regressing(Y=Y, X=X, M=M)
+# include covariate
+# fit <- mediate.test.regressing(Y=Y, X=X, M=M, cov=NULL)
+
+# not including covariate
+# fit <- mediate.test.regressing(Y=Y, X=X, M=M, cov=cov)
+
 #ash_reg <- ash(betahat=fit$d, sebetahat=fit$d_se, lik=lik_normal())
 
 }
